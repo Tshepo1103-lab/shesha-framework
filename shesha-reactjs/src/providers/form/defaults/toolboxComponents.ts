@@ -105,6 +105,7 @@ import PropertyRouterComponent from '@/designer-components/propertyRouter';
 import ChevronComponent from '@/designer-components/chevron/chevron';
 import KanbanComponent from '@/designer-components/kanban';
 import ChartComponent from '@/designer-components/charts';
+import SegmentedComponent from '@/designer-components/segmented';
 
 export const getToolboxComponents = (
   devMode: boolean,
@@ -156,7 +157,8 @@ export const getToolboxComponents = (
         RefListStatusComponent,
         StatusTag,
         ChevronComponent,
-        KanbanComponent
+        KanbanComponent,
+        SegmentedComponent,
       ],
     },
     {
