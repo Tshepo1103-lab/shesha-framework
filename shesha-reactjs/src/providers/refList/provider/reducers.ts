@@ -9,9 +9,44 @@ import { RefListItemGroupActionEnums } from './actions';
 import { IRefListItemGroup } from './models';
 import { handleActions } from 'redux-actions';
 import { getItemPositionById } from './utils';
+import { nanoid } from 'nanoid';
 
 const RefListItemGroupReducer = handleActions<IRefListItemGroupConfiguratorStateContext, any>(
   {
+    [RefListItemGroupActionEnums.AddLayer]: (state: IRefListItemGroupConfiguratorStateContext) => {
+      const LayersCount = state.items.length;
+      const LayerProps: any = {
+        id: nanoid(),
+        index: [state.items.length],
+        item: `Item ${LayersCount + 1}`,
+      };
+
+      const newItems = [...state.items];
+
+      newItems.push(LayerProps);
+
+      return {
+        ...state,
+        items: newItems,
+        selectedItemId: LayerProps.id,
+      };
+    },
+
+    [RefListItemGroupActionEnums.DeleteLayer]: (
+      state: IRefListItemGroupConfiguratorStateContext,
+      action: ReduxActions.Action<string>,
+    ) => {
+      const { payload } = action;
+
+      const newItems = state.items.filter((item) => item.id !== payload);
+
+      return {
+        ...state,
+        items: [...newItems],
+        selectedItemId: state.selectedItemId === payload ? null : state.selectedItemId,
+      };
+    },
+    
     [RefListItemGroupActionEnums.SetItems]: (state: IRefListItemGroupConfiguratorStateContext,
       action: ReduxActions.Action<any[]>,
     ) => {

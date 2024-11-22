@@ -2,6 +2,8 @@ import { createAction } from 'redux-actions';
 import { ISettingsUpdatePayload, IUpdateChildItemsPayload, IUpdateItemSettingsPayload } from './contexts';
 
 export enum RefListItemGroupActionEnums {
+  AddLayer = 'ADD_LAYER',
+  DeleteLayer = 'DELETE_LAYER',
   UpdateItem = 'UPDATE_ITEM',
   SelectItem = 'SELECT_ITEM',
   UpdateChildItems = 'UPDATE_CHILD_ITEMS',
@@ -26,3 +28,7 @@ export const updateChildItemsAction = createAction<IUpdateChildItemsPayload, IUp
 export const storeSettingsAction = createAction<ISettingsUpdatePayload>(
   RefListItemGroupActionEnums.StoreSettings
 );
+
+export const addLayerAction = createAction(RefListItemGroupActionEnums.AddLayer);
+
+export const deleteLayerAction = createAction<string, string>(RefListItemGroupActionEnums.DeleteLayer, (p) => p);

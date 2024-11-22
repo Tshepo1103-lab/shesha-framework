@@ -7,9 +7,10 @@ import RefListItemProperties from './properties';
 export interface IRefListItemGroupConfiguratorProps {
   render?: ReactNode | (() => ReactNode);
   heading?: ReactNode | (() => ReactNode);
+  type?: string;
 }
 
-export const RefListItemGroupConfigurator: FC<IRefListItemGroupConfiguratorProps> = () => {
+export const RefListItemGroupConfigurator: FC<IRefListItemGroupConfiguratorProps> = (props) => {
   const { styles } = useStyles();
   const { readOnly } = useRefListItemGroupConfigurator();
 
@@ -19,7 +20,7 @@ export const RefListItemGroupConfigurator: FC<IRefListItemGroupConfiguratorProps
         message={readOnly ? 'Here you can view your component configurations.' : 'Here you can configure the component step configurations.'}
         className={styles.shaToolbarConfiguratorAlert}
       />
-      <RefListItemProperties />
+      <RefListItemProperties type={props.type}/>
     </div>
   );
 };

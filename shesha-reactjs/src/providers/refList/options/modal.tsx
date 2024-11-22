@@ -1,5 +1,5 @@
-import { Modal } from 'antd';
-import React, { FC, useState } from 'react';
+import { Button, Divider, Modal } from 'antd';
+import React, { FC, useMemo, useState } from 'react';
 import { useDeepCompareEffect } from 'react-use';
 import RefListItemGroupConfigurator from './configurator';
 import RefListItemsContainer from './refListItemsContainer';
@@ -11,12 +11,13 @@ interface IFiltersListProps {
   items?: IRefListItemFormModel[];
   showModal?: () => void;
   readOnly?: boolean;
+  values?: any;
+  datasource?: string;
 }
 
-export const RefListItemsListInner: FC<Omit<IFiltersListProps, 'items'>> = ({ showModal, readOnly = false }) => {
+export const RefListItemsListInner: FC<Omit<IFiltersListProps, 'items'>> = ({ showModal, readOnly = false, values,datasource }) => {
   const { styles } = useStyles();
-  const { items, selectItem } = useRefListItemGroupConfigurator();
-
+  const { items, selectItem, addLayer: addButton } = useRefListItemGroupConfigurator();
 
   const onConfigClick = (localSelectedId: string) => {
     selectItem(localSelectedId);
@@ -24,9 +25,18 @@ export const RefListItemsListInner: FC<Omit<IFiltersListProps, 'items'>> = ({ sh
     showModal();
   };
 
+  console.log('items!!!!', items);
   return (
     <div className={styles.shaToolbarConfigurator}>
-      <RefListItemsContainer items={items} index={[]} onConfigClick={onConfigClick} readOnly={readOnly} />
+      <RefListItemsContainer  items={items} values={values} datasource={datasource} index={[]} onConfigClick={onConfigClick} readOnly={readOnly} />
+      {(!readOnly  && datasource === 'values') && (
+        <>
+          <Divider />
+          <Button onClick={addButton} size="large" type="primary" block={true}>
+            Add Value
+          </Button>
+        </>
+      )}
     </div>
   );
 };
@@ -38,18 +48,25 @@ export interface ITableViewSelectorSettingsModal {
   onChange?: any;
   readOnly: boolean;
   referenceList?: any;
+  type?: string;
+  values?: any;
+  datasource?: string;  
 }
 
 export const TableViewSelectorSettingsModalInner: FC<ITableViewSelectorSettingsModal> = ({
   visible,
   onChange,
   hideModal,
+  type
 }) => {
   const { items, readOnly } = useRefListItemGroupConfigurator();
-  useDeepCompareEffect(() => {
-    onChange(items);
-  }, [items]);
 
+  useDeepCompareEffect(() => {
+    if(items?.length){
+      onChange(items);
+    }
+  }, [items]);
+ 
   const updateFilters = () => {
     if (typeof onChange === 'function') onChange(items);
     hideModal();
@@ -66,7 +83,7 @@ export const TableViewSelectorSettingsModalInner: FC<ITableViewSelectorSettingsM
       onOk={updateFilters}
       okButtonProps={{ hidden: readOnly }}
     >
-      <RefListItemGroupConfigurator />
+      <RefListItemGroupConfigurator type={type}/>
     </Modal>
   );
 };
@@ -83,10 +100,10 @@ export const RefListItemSelectorSettingsModal: FC<Omit<ITableViewSelectorSetting
   const items = (props.value as IRefListItemFormModel[]) || [];
 
   return (
-    <RefListItemGroupConfiguratorProvider referenceList={props.referenceList} items={items} readOnly={props.readOnly}>
-      <RefListItemsListInner showModal={showModal} readOnly={props.readOnly} />
+    <RefListItemGroupConfiguratorProvider referenceList={props.referenceList} items={items} readOnly={props.readOnly} values={props.values} datasource={props.datasource}>
+      <RefListItemsListInner showModal={showModal} readOnly={props.readOnly} datasource={props.datasource} values={props.values}/>
 
-      <TableViewSelectorSettingsModalInner {...props} visible={modalVisible} hideModal={hideModal} />
+      <TableViewSelectorSettingsModalInner {...props} visible={modalVisible} hideModal={hideModal} type={props.type}/>
     </RefListItemGroupConfiguratorProvider>
   );
 };

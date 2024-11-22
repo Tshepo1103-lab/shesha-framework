@@ -18,6 +18,7 @@ export interface IRefListItemGroupConfiguratorStateContext {
   readOnly: boolean;
   active?: any;
   userSettings: { [key: string]: boolean };
+  datasource?: string;
 
 }
 export interface ISettingsUpdatePayload {
@@ -31,12 +32,15 @@ export interface IRefListItemGroupConfiguratorActionsContext {
   getItem: (uid: string) => RefListGroupItemProps;
   updateChildItems: (payload: IUpdateChildItemsPayload) => void;
   storeSettings: (columnId: string, isCollapsed: boolean) => Promise<void>;
+  addLayer: () => void;
+  deleteLayer: (uid: string) => void;
 }
 
 export const REF_LIST_ITEM_GROUP_CONTEXT_INITIAL_STATE: IRefListItemGroupConfiguratorStateContext = {
   items: [],
   readOnly: false,
   userSettings: {},
+  datasource: ''
 };
 
 export const RefListItemGroupConfiguratorStateContext = createContext<IRefListItemGroupConfiguratorStateContext>(

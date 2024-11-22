@@ -7,6 +7,8 @@ import {
   IUpdateChildItemsPayload,
 } from './contexts';
 import {
+  addLayerAction,
+  deleteLayerAction,
   selectItemAction,
   setItems,
   storeSettingsAction,
@@ -29,6 +31,8 @@ export interface IRefListItemGroupConfiguratorProviderProps {
   onChange?: (value: any) => void;
   readOnly?: boolean;
   referenceList?: any;
+  values?: any;
+  datasource?: string;
 }
 
 const RefListItemGroupConfiguratorProvider: FC<PropsWithChildren<IRefListItemGroupConfiguratorProviderProps>> = (props) => {
@@ -37,13 +41,17 @@ const RefListItemGroupConfiguratorProvider: FC<PropsWithChildren<IRefListItemGro
 
   const [state, dispatch] = useReducer(RefListItemGroupReducer, {
     ...REF_LIST_ITEM_GROUP_CONTEXT_INITIAL_STATE,
-    items: props.items,
+    items: props.items || [],
     readOnly: readOnly,
+    datasource: props.datasource,
   });
 
-
   useEffect(() => {
-    if (props?.items?.length && props.items.some(x =>x.referenceList?.id === props?.referenceList?.id )) return;
+    if (props.datasource === 'values' && props?.items?.length && props.items.some(x =>x.referenceList?.id === props?.referenceList?.id )) return;
+    if(props.datasource === 'values' ) 
+    {
+      dispatch(setItems(props.items));
+    };
     refetch(getRefListItems(props.referenceList?.id as string))
     .then((resp) => {
       dispatch(setItems(resp.result.items));
@@ -52,7 +60,7 @@ const RefListItemGroupConfiguratorProvider: FC<PropsWithChildren<IRefListItemGro
       console.error("LOG:: reference list error", _e);
     });
 
-  }, [props?.referenceList?.id]);
+  }, [props?.referenceList?.id, props.datasource]);
 
   const selectItem = (uid: string) => {
     dispatch(selectItemAction(uid));
@@ -75,8 +83,17 @@ const RefListItemGroupConfiguratorProvider: FC<PropsWithChildren<IRefListItemGro
       dispatch(storeSettingsAction({ columnId: columnId, isCollapsed: isCollapsed }));
 
   };
+
+  const addLayer = () => {
+    if (!state.readOnly) dispatch(addLayerAction());
+  };
+
+  const deleteLayer = (uid: string) => {
+    if (!state.readOnly) dispatch(deleteLayerAction(uid));
+  };
   
   
+  console.log('state', state);
 
   return (
     <RefListItemGroupConfiguratorStateContext.Provider value={state}>
@@ -87,6 +104,8 @@ const RefListItemGroupConfiguratorProvider: FC<PropsWithChildren<IRefListItemGro
           getItem,
           updateChildItems,
           storeSettings,
+          addLayer,
+          deleteLayer,
         }}
       >
         {children}

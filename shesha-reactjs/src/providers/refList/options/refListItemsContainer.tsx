@@ -11,6 +11,8 @@ export interface IRefListItemsContainerProps {
   items: RefListGroupItemProps[];
   onConfigClick?: (selectedItemId: string) => void;
   readOnly?: boolean;
+  datasource?: string;  
+  values?: any;
 }
 
 export const RefListItemsContainer: FC<IRefListItemsContainerProps> = (props) => {
@@ -25,7 +27,6 @@ export const RefListItemsContainer: FC<IRefListItemsContainerProps> = (props) =>
       updateChildItems({ index: props.index, childs: newChilds });
     }
   };
-
   return (
     <div className={styles.sidebarContainerMainArea}>
       <ReactSortable
