@@ -1,11 +1,19 @@
 import { DesignerToolbarSettings } from '@/interfaces/toolbarSettings';
 import { nanoid } from 'nanoid';
+import { IRefListItemPropertiesProps } from './properties';
 
-export const componentsSettings = (type: any) => {
-  console.log('typeToMakeDecisions', type);
+export const componentsSettings = (props: IRefListItemPropertiesProps ) => {
+  const { type, datasource } = props;
+  console.log('typeToMakeDecisions', props);
   return(
     new DesignerToolbarSettings()
-
+        .addTextField({
+          id: nanoid(),
+          propertyName: 'item',
+          label: 'Label',
+          defaultValue: 'Label',
+          hidden: datasource === 'values' ? false : true,
+        })
         .addCheckbox({
           id: nanoid(),
           propertyName: 'hidden',

@@ -10,6 +10,7 @@ import { componentsSettings } from './refListItemsSetttings';
 
 export interface IRefListItemPropertiesProps {
   type?: string;
+  datasource?: string;
 }
 
 export const RefListItemProperties: FC<IRefListItemPropertiesProps> = (props) => {
@@ -41,7 +42,7 @@ export const RefListItemProperties: FC<IRefListItemPropertiesProps> = (props) =>
     if (!selectedItemId) return null;
 
     const componentModel = getComponentModel(getItem(selectedItemId));
-    const markup = componentsSettings(props.type);
+    const markup = componentsSettings(props);
 
     return (
       <ConfigurableForm

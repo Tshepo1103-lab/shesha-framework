@@ -13,9 +13,9 @@ import { nanoid } from 'nanoid';
 
 const RefListItemGroupReducer = handleActions<IRefListItemGroupConfiguratorStateContext, any>(
   {
-    [RefListItemGroupActionEnums.AddLayer]: (state: IRefListItemGroupConfiguratorStateContext) => {
+    [RefListItemGroupActionEnums.AddItem]: (state: IRefListItemGroupConfiguratorStateContext) => {
       const LayersCount = state.items.length;
-      const LayerProps: any = {
+      const ItemsProps: any = {
         id: nanoid(),
         index: [state.items.length],
         item: `Item ${LayersCount + 1}`,
@@ -23,16 +23,16 @@ const RefListItemGroupReducer = handleActions<IRefListItemGroupConfiguratorState
 
       const newItems = [...state.items];
 
-      newItems.push(LayerProps);
+      newItems.push(ItemsProps);
 
       return {
         ...state,
         items: newItems,
-        selectedItemId: LayerProps.id,
+        selectedItemId: ItemsProps.id,
       };
     },
 
-    [RefListItemGroupActionEnums.DeleteLayer]: (
+    [RefListItemGroupActionEnums.DeleteItem]: (
       state: IRefListItemGroupConfiguratorStateContext,
       action: ReduxActions.Action<string>,
     ) => {

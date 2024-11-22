@@ -48,7 +48,7 @@ export const RefListItemsContainer: FC<IRefListItemsContainerProps> = (props) =>
         bubbleScroll={true}
       >
         {props.items.map((item, index) => (
-          <RefListItem index={[index]} {...item} onConfigClick={props.onConfigClick} key={item.id} />
+          <RefListItem index={[index]} {...item} onConfigClick={props.onConfigClick} key={item.id} datasource={props.datasource}/>
         ))}
       </ReactSortable>
     </div>

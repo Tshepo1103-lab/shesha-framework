@@ -8,6 +8,7 @@ export interface IRefListItemGroupConfiguratorProps {
   render?: ReactNode | (() => ReactNode);
   heading?: ReactNode | (() => ReactNode);
   type?: string;
+  datasource?: string;
 }
 
 export const RefListItemGroupConfigurator: FC<IRefListItemGroupConfiguratorProps> = (props) => {
@@ -20,7 +21,7 @@ export const RefListItemGroupConfigurator: FC<IRefListItemGroupConfiguratorProps
         message={readOnly ? 'Here you can view your component configurations.' : 'Here you can configure the component step configurations.'}
         className={styles.shaToolbarConfiguratorAlert}
       />
-      <RefListItemProperties type={props.type}/>
+      <RefListItemProperties type={props.type} datasource={props.datasource} />
     </div>
   );
 };

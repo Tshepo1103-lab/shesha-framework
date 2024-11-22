@@ -49,7 +49,7 @@ const SegmentedSettings: FC<ISettingsFormFactoryArgs<ISegmentedProps>> = (props)
         </SettingsFormItem>
         </Show>
         <SettingsFormItem name="items">
-          <RefListItemSelectorSettingsModal type={'segmented'} referenceList={values.referenceList} readOnly={values.readOnly}  datasource={values.datasource} values={values.values}/>
+          <RefListItemSelectorSettingsModal type={'segmented'} referenceList={values.referenceList} readOnly={values.readOnly}  datasource={values.datasource}/>
         </SettingsFormItem>
       </SettingsCollapsiblePanel>
 

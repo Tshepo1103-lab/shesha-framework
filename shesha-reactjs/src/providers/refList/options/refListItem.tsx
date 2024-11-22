@@ -12,6 +12,7 @@ export interface IRefListGroupItemProps extends IRefListItemFormModel {
   index?: number[];
   item?: string;
   id: string;
+  datasource?: string;
   onConfigClick?: (selectedItemId: string) => void;
 }
 
@@ -45,7 +46,7 @@ export const RefListItem: FC<IRefListGroupItemProps> = (props) => {
         <div className={styles.shaToolbarItemControls}>
 
           <Button icon={<SettingOutlined />} onClick={onEditBtnClick} size="small" />
-          {!props.readOnly && <Button icon={<DeleteFilled color="red" />} onClick={onDeleteClick} size="small" danger />}
+          {(!props.readOnly && props.datasource === 'values') && <Button icon={<DeleteFilled color="red" />} onClick={onDeleteClick} size="small" danger />}
         </div>
       </div>
     </div>
