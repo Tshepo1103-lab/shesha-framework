@@ -47,11 +47,9 @@ const RefListItemGroupConfiguratorProvider: FC<PropsWithChildren<IRefListItemGro
   });
 
   useEffect(() => {
+    console.log('datasource', props.datasource, 'items', props.items);
+    dispatch(setItems([]));
     if (props.datasource === 'values' && props?.items?.length && props.items.some(x =>x.referenceList?.id === props?.referenceList?.id )) return;
-    if(props.datasource === 'values' ) 
-    {
-      dispatch(setItems(props.items));
-    };
     refetch(getRefListItems(props.referenceList?.id as string))
     .then((resp) => {
       dispatch(setItems(resp.result.items));
