@@ -203,8 +203,8 @@ export const StoredFilesRendererBase: FC<IStoredFilesRendererBaseProps> = ({
     fetchImages();
   }, [fileList]);
 
-  const handlePreview = async (file: UploadFile) => {
-    setPreviewImage({ url: imageUrls[file.uid], uid: file.uid, name: file.name });
+  const handlePreview = async (image) => {
+    setPreviewImage(image);
     setPreviewOpen(true);
   };
 
@@ -274,7 +274,7 @@ export const StoredFilesRendererBase: FC<IStoredFilesRendererBaseProps> = ({
     onPreview: (file) => {
       const { uid, name } = file;
       if (isImageType(file.type)) {
-        handlePreview(file);
+        handlePreview(previewImage);
       } else downloadFile({ fileId: uid, fileName: name });
     },
     showUploadList: {

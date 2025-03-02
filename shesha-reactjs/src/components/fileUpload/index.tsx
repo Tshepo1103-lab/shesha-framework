@@ -1,4 +1,4 @@
-import React, { FC, useRef } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import { useStoredFile } from '@/providers';
 import { Upload, App, Button } from 'antd';
 import { UploadRequestOption as RcCustomRequestOptions } from 'rc-upload/lib/interface';
@@ -15,6 +15,8 @@ import { FileVersionsPopup } from './fileVersionsPopup';
 import { DraggerStub } from './stubs';
 import { useStyles } from './styles/styles';
 import classNames from 'classnames';
+import { getFileIcon, isImageType } from '@/icons/fileIcons';
+import { useThumbanail } from '@/designer-components/_settings/utils';
 
 const { Dragger } = Upload;
 
@@ -29,6 +31,7 @@ export interface IFileUploadProps {
   isStub?: boolean;
   allowedFileTypes?: string[];
   isDragger?: boolean;
+  listType?: string;
 }
 
 export const FileUpload: FC<IFileUploadProps> = ({
@@ -40,6 +43,7 @@ export const FileUpload: FC<IFileUploadProps> = ({
   isStub = false,
   allowedFileTypes = [],
   isDragger = false,
+  listType = 'text',
 }) => {
   const {
     fileInfo,
@@ -54,7 +58,42 @@ export const FileUpload: FC<IFileUploadProps> = ({
   const { styles } = useStyles();
   const uploadButtonRef = useRef(null);
   const uploadDraggerSpanRef = useRef(null);
+  const {fetchThumbnail} =useThumbanail();
   const { message } = App.useApp();
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState();
+  // const [imageUrl, setImageUrl] = useState<string>(fileInfo.url);
+  
+
+  useEffect(() => {
+    if(fileInfo) {
+      const fetchImages = async () => {
+      const thumbnail = await fetchThumbnail(fileInfo?.id, 55,55,1);
+      console.log("Thumbnail", thumbnail); 
+      setPreviewImage(thumbnail);
+    };
+    fetchImages();
+  }
+  }, [fileInfo]);
+
+  const handlePreview = async () => {
+    setPreviewOpen(true);
+  };
+
+
+  // const iconRender = (file) => {
+  //   const { type, uid } = file;
+
+  //   if (isImageType(type)) {
+  //     if (listType === 'thumbnail' && !isDragger) {
+  //       return <Image src={imageUrls[uid]} alt={file.name} preview={false} />;
+  //     }
+  //   }
+
+  //   return getFileIcon(type);
+  // };
+
+
 
   const onCustomRequest = ({ file /*, onError, onSuccess*/ }: RcCustomRequestOptions) => {
     // call action from context
@@ -112,6 +151,12 @@ export const FileUpload: FC<IFileUploadProps> = ({
     accept: allowedFileTypes?.join(','),
     multiple: false,
     fileList: fileInfo ? [fileInfo] : [],
+    listType: listType === 'thumbnail' ? 'picture-card' : 'text',
+     onPreview: (file) => {
+          if (isImageType(file.type)) {
+            handlePreview();
+          };
+        },
     customRequest: onCustomRequest,
     onChange(info) {
       if (info.file.status !== 'uploading') {
@@ -138,8 +183,9 @@ export const FileUpload: FC<IFileUploadProps> = ({
       );
     },
   };
+  console.log('fileProps', listType);
 
-  const showUploadButton = allowUpload && !fileInfo && !isUploading;
+  const showUploadButton =  !fileInfo && !isUploading;
   const classes = classNames(styles.shaUpload, { [styles.shaUploadHasFile]: fileInfo || isUploading });
 
   const uploadButton = (
@@ -148,8 +194,9 @@ export const FileUpload: FC<IFileUploadProps> = ({
       type="link"
       ref={uploadButtonRef}
       style={{ display: !showUploadButton ? 'none' : '' }}
+      disabled={!allowUpload} 
     >
-      (press to upload)
+      {listType === 'text' && 'Press To Upload'}
     </Button>
   );
 
@@ -172,9 +219,15 @@ export const FileUpload: FC<IFileUploadProps> = ({
     }
 
     return (
-        <Upload {...fileProps} className={classes}>
+      <>
+       <Upload {...fileProps} className={classes}>
           {allowUpload && uploadButton}
         </Upload>
+        {previewImage && (
+        previewImage
+      )}
+      </>
+       
       );
   };
 
