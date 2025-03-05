@@ -8,7 +8,7 @@ import { getSettings } from './settingsForm';
 import { migrateCustomFunctions, migratePropertyName } from '@/designer-components/_common-migrations/migrateSettings';
 import { migrateVisibility } from '@/designer-components/_common-migrations/migrateVisibility';
 import { migrateFormApi } from '@/designer-components/_common-migrations/migrateFormApi1';
-import { pickStyleFromModel, useDataTableStore } from '@/index';
+import { getStyle, pickStyleFromModel, useDataTableStore } from '@/index';
 import { Alert } from 'antd';
 import { getFontStyle } from '@/designer-components/_settings/utils/font/utils';
 import { removeUndefinedProps } from '@/utils/object';
@@ -23,16 +23,19 @@ const PagerComponent: IToolboxComponent<IPagerComponentProps> = {
   name: 'Table Pager',
   icon: <ControlOutlined />,
   Factory: ({ model }) => {
+    const data = model;
     const store = useDataTableStore(false);
     const font = model?.font;
     const fontStyles = useMemo(() => getFontStyle(font), [font]);
     if (model.hidden) return null;  
     const styling = JSON.parse(model.stylingBox || '{}');
     const stylingBoxAsCSS = pickStyleFromModel(styling);
+    const jsStyle = getStyle(model.style, data);
 
     const additionalStyles: CSSProperties = removeUndefinedProps({
       ...stylingBoxAsCSS,
       ...fontStyles,
+      ...jsStyle,
     });
     return <TablePager {...model} style={additionalStyles} />;
 
