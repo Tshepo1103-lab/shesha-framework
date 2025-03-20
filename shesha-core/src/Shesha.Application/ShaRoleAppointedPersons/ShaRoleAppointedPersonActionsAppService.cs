@@ -45,7 +45,7 @@ namespace Shesha.ShaRoleAppointedPersons
 
             await CurrentUnitOfWork.SaveChangesAsync();
 
-            if (appointment?.Person?.User != null)
+            if (appointment.Person?.User != null)
                 await _shaPermissionChecker.ClearPermissionsCacheForUserAsync(appointment.Person.User.Id, appointment.Person.User.TenantId);
 
             var dto = MapToEntityDto(appointment);
@@ -61,7 +61,7 @@ namespace Shesha.ShaRoleAppointedPersons
             entity.Role = input.RoleId != Guid.Empty
                 ? await _roleRepository.GetAsync(input.RoleId)
                 : null;
-            entity.Person = (input.Person?.Id ?? Guid.Empty) != Guid.Empty
+            entity.Person = input.Person != null && input.Person.Id != null && input.Person.Id != Guid.Empty
                 ? await _personRepository.GetAsync(input.Person.Id.Value)
                 : null;
 
@@ -120,7 +120,7 @@ namespace Shesha.ShaRoleAppointedPersons
 
             await CurrentUnitOfWork.SaveChangesAsync();
 
-            if (appointment?.Person?.User != null)
+            if (appointment.Person?.User != null)
                 await _shaPermissionChecker.ClearPermissionsCacheForUserAsync(appointment.Person.User.Id, appointment.Person.User.TenantId);
 
             var dto = MapToEntityDto(appointment);

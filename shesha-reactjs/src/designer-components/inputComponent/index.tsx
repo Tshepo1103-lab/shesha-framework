@@ -1,10 +1,10 @@
 import React, { FC, useCallback, useState } from 'react';
 import { Alert, AutoComplete, Button, Input, InputNumber, Radio, Select, Space, Switch, Tooltip } from "antd";
-import { EditableTagGroup, EndpointsAutocomplete } from '@/components';
+import { EditableTagGroup, EndpointsAutocomplete, FormComponentSelector } from '@/components';
 import { ButtonGroupConfigurator, CodeEditor, ColorPicker, FormAutocomplete, IconType, LabelValueEditor, PermissionAutocomplete, SectionSeparator, ShaIcon } from '@/components';
 import { PropertyAutocomplete } from '@/components/propertyAutocomplete/propertyAutocomplete';
 import { IObjectMetadata } from '@/interfaces/metadata';
-import { evaluateValue, executeScript, useAvailableConstantsData, useFormData } from '@/index';
+import { evaluateString, evaluateValue, executeScript, useAvailableConstantsData, useFormData, useMetadata } from '@/index';
 import { ICodeEditorProps } from '@/designer-components/codeEditor/interfaces';
 import { useMetadataBuilderFactory } from '@/utils/metadata/hooks';
 import camelcase from 'camelcase';
@@ -35,6 +35,7 @@ import { ITabPaneProps } from '../tabs/models';
 import { IWizardStepProps } from '../wizard/models';
 import { ConfigurableActionConfigurator } from '../configurableActionsConfigurator/configurator';
 import { formTypes } from '../entityReference/settings';
+import { SortingEditor } from '@/components/dataTable/sortingConfigurator';
 
 export const InputComponent: FC<ISettingsInputProps> = (props) => {
     const icons = require('@ant-design/icons');
@@ -48,9 +49,9 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
 
     const metadataBuilderFactory = useMetadataBuilderFactory();
     const { data: formData } = useFormData();
-    const { size, className, value, placeholder, type, dropdownOptions, buttonGroupOptions, defaultValue,
-        propertyName, tooltip: description, onChange, readOnly, label, availableConstantsExpression,
-        allowClear, dropdownMode, variant, icon, iconAlt, tooltip, dataSourceType, dataSourceUrl, onAddNewItem, listItemSettingsMarkup } = props;
+    const { size, className, value, placeholder, type, dropdownOptions, buttonGroupOptions, defaultValue, componentType,
+        propertyName, tooltip: description, onChange, readOnly, label, availableConstantsExpression, noSelectionItemText, noSelectionItemValue,
+        allowClear, dropdownMode, variant, icon, iconAlt, tooltip, dataSourceType, dataSourceUrl, onAddNewItem, listItemSettingsMarkup, propertyAccessor } = props;
 
     const iconElement = (icon: string | React.ReactNode, size?, hint?, style?) => {
 
@@ -94,6 +95,16 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
         exposedVariables: defaultExposedVariables
     };
 
+    const property = propertyAccessor
+        ? evaluateString(propertyAccessor, { data: formData })
+        : null;
+
+    const meta = useMetadata(false);
+
+    const propertyMeta = property && meta
+        ? meta.getPropertyMeta(property)
+        : null;
+
     const editModes = [
         { value: 'editable', icon: 'editIcon', title: 'Editable' },
         { value: 'readOnly', icon: 'readonlyIcon', title: 'Read only' },
@@ -107,8 +118,12 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
     const verb = props.httpVerb ? evaluateValue(props.httpVerb, { data: formData }) : props.httpVerb;
 
     switch (type) {
-        case 'color':
-            return <ColorPicker size={size} value={value} readOnly={readOnly} allowClear onChange={onChange} />;
+        case 'tooltip':
+            return iconElement(icon, null, tooltip);
+        case 'dataSortingEditor':
+            return <SortingEditor {...props} onChange={onChange} modelType={props.modelType} readOnly={readOnly} />;
+        case 'colorPicker':
+            return <ColorPicker size={size} value={value} readOnly={readOnly} allowClear onChange={onChange} showText={props.showText} />;
         case 'dropdown':
             return <Select
                 size={size}
@@ -128,14 +143,14 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
         case 'radio':
             return <Radio.Group buttonStyle='solid' defaultValue={defaultValue} value={value} onChange={onChange} size={size} disabled={readOnly}>
                 {buttonGroupOptions.map(({ value, icon, title }) => {
-                    return <Radio.Button key={value} value={value} title={title}>{iconElement(icon, null, tooltip)}</Radio.Button>;
+                    return <Radio.Button key={value} value={value} title={title}>{iconElement(icon, null)}</Radio.Button>;
                 })}
             </Radio.Group>;
         case 'switch':
             return <Switch disabled={readOnly} size='small'
                 defaultValue={defaultValue} onChange={onChange} value={value} />;
-        case 'number':
-            return <InputNumber min={props.min} max={props.max} placeholder={placeholder}
+        case 'numberField':
+            return <InputNumber min={props.min} max={props.max} placeholder={placeholder} step={props.step}
                 defaultValue={defaultValue} variant={variant} readOnly={readOnly} size={size} value={value} onChange={onChange} style={{ width: "100%" }} suffix={<span style={{ height: '20px' }}>{iconElement(icon, null, tooltip)} </span>}
             />;
         case 'customDropdown':
@@ -160,7 +175,7 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
                 onChange={onChange}
             />;
         case 'button':
-            return <Button disabled={readOnly} defaultValue={defaultValue} type={value ? 'primary' : 'default'} size='small' icon={!value ? iconElement(icon, null, tooltip) : iconElement(iconAlt, null, tooltip)} onClick={() => onChange(!value)} />;
+            return <Button disabled={readOnly} defaultValue={defaultValue} type={value ? 'primary' : 'default'} size='small' icon={!value ? iconElement(icon, null, tooltip) : iconElement(iconAlt, null, tooltip)} onClick={() => onChange(!value)} title={tooltip} />;
         case 'filtersList':
             return <FiltersList readOnly={readOnly}  {...props} />;
         case 'buttonGroupConfigurator':
@@ -171,10 +186,8 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
                     <Radio.Button key={value} value={value} title={title}>{iconElement(icon)}</Radio.Button>
                 ))}
             </Radio.Group>;
-        case 'buttonGroupConfigurator':
-            return <ButtonGroupConfigurator readOnly={readOnly} size={size} value={value} onChange={onChange} />;
         case 'dynamicItemsConfigurator':
-            <DynamicActionsConfigurator editorConfig={props} readOnly={readOnly} value={value} onChange={onChange} />;
+            return <DynamicActionsConfigurator editorConfig={{ ...props, hidden: props.hidden as any }} readOnly={readOnly} value={value} onChange={onChange} />;
         case 'autocomplete':
             return <Autocomplete.Raw
                 dataSourceType={dataSourceType}
@@ -192,11 +205,11 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
             return <ReferenceListAutocomplete value={value} onChange={onChange} readOnly={readOnly} size={size} />;
         case 'queryBuilder':
             return <QueryBuilderWrapper>
-                <QueryBuilder {...props} hideLabel={true}
+                <QueryBuilder {...{ ...props, hidden: props.hidden as any }} hideLabel={true}
                     defaultValue={defaultValue} readOnly={props.readOnly}></QueryBuilder>
             </QueryBuilderWrapper>;
         case 'columnsConfig':
-            return <ColumnsConfig size={size} />;
+            return <ColumnsConfig size={size} {...props} />;
         case 'columnsList':
             return <ColumnsList {...props} readOnly={readOnly} />;
         case 'sizableColumnsConfig':
@@ -213,11 +226,12 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
                 onChange={onChange}
             />;
         case 'contextPropertyAutocomplete':
-            return <ContextPropertyAutocomplete {...props} readOnly={readOnly} defaultModelType="defaultType" formData={formData} id="contextPropertyAutocomplete" />;
+            return <ContextPropertyAutocomplete {...{ ...props, hidden: props.hidden as any }} readOnly={readOnly} defaultModelType="defaultType" formData={formData} id="contextPropertyAutocomplete" />;
         case 'formAutocomplete':
             return <FormAutocomplete
                 readOnly={readOnly}
                 value={value}
+                size={size}
                 onChange={onChange}
             />;
         case 'labelValueEditor':
@@ -227,7 +241,6 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
         case 'multiColorPicker':
             return <MultiColorInput value={value} onChange={onChange} readOnly={readOnly} propertyName={propertyName} />;
         case 'itemListConfiguratorModal':
-
             return <ItemListConfiguratorModal<ITabPaneProps | IWizardStepProps>
                 readOnly={readOnly}
                 initNewItem={onAddNewItem}
@@ -275,18 +288,27 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
                     )
                 }
             />;
-        case 'configurableActionConfig':
+        case 'configurableActionConfigurator':
             return <ConfigurableActionConfigurator editorConfig={null} level={0} />;
-        case 'fullIdFormAutocomplete':
-            return <FormAutocomplete readOnly={readOnly} />;
         case 'typeAutoComplete':
             return <Autocomplete.Raw
                 dataSourceType="url"
                 dataSourceUrl="/api/services/app/Metadata/TypeAutocomplete"
                 readOnly={readOnly}
+                size={size}
             />;
-        case 'endpointsAutoComplete':
-            return <EndpointsAutocomplete readOnly={readOnly} />;
+        case 'componentSelector':
+            return <FormComponentSelector
+                componentType={componentType}
+                noSelectionItem={
+                    noSelectionItemText ? { label: noSelectionItemText, value: noSelectionItemValue } : undefined
+                }
+                readOnly={readOnly}
+                size={size}
+                value={value}
+                onChange={onChange}
+                propertyMeta={propertyMeta}
+            />;
         default:
             return <Input
                 size={size}
@@ -312,21 +334,26 @@ export interface IInputRowProps {
 
 export const InputRow: React.FC<IInputRowProps> = ({ inputs, readOnly, children, inline, hidden }) => {
     const { styles } = useStyles();
+    const { data: formData } = useFormData();
 
-    return hidden ? null : <div className={inline ? styles.inlineInputs : styles.rowInputs}>
+    const isHidden = typeof hidden === 'string' ? evaluateString(hidden, { data: formData }) : hidden;
+
+    return isHidden || inputs.length === 0 ? null : <div className={inline ? styles.inlineInputs : styles.rowInputs}>
         {inputs.map((props, i) => {
             const { type } = props;
+            const isHidden = typeof props?.hidden === 'string' ? evaluateString(props?.hidden, { data: formData }) : props?.hidden;
 
-            const width = type === 'number' ? 100 :
+            const width = type === 'numberField' ? 100 :
                 type === 'button' ? 24 :
                     type === 'dropdown' ? 120 :
                         type === 'radio' ? props.buttonGroupOptions.length * 32 :
-                            type === 'color' ? 24 :
+                            type === 'colorPicker' ? 24 :
                                 type === 'customDropdown' ? 120 : 50;
 
             return (
                 <SettingInput key={i + props.label}
                     {...props}
+                    hidden={isHidden}
                     readOnly={readOnly}
                     inline={inline}
                     width={inline && props.icon ? (props.width || width) : inline ? props.width || width : null} />

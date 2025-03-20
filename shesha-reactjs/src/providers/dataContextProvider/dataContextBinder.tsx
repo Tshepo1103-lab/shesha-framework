@@ -14,6 +14,7 @@ import {
   DataContextProviderActionsContext,
   DataContextProviderStateContext,
   DataContextType,
+  IDataContextFull,
   IDataContextProviderActionsContext,
   IDataContextProviderActionsContextOverride,
   IDataContextProviderStateContext,
@@ -30,6 +31,7 @@ export interface IDataContextBinderProps {
   data?: any;
   api?: any;
   metadata?: Promise<IModelMetadata>;
+  distributeMetadata?: boolean;
   getData?: ContextGetData;
   getFieldValue?: ContextGetFieldValue;
   setData?: ContextSetData;
@@ -85,7 +87,7 @@ const DataContextBinder: FC<PropsWithChildren<IDataContextBinderProps>> = (props
       return props.getData();
 
     return dataRef.current ?? {};
-  }, [props.getFieldValue]);
+  }, [props.getData]);
 
   const setFieldValue = useDeepCompareCallback((name: string, value: any) => {
     if (props.setFieldValue)
@@ -116,11 +118,10 @@ const DataContextBinder: FC<PropsWithChildren<IDataContextBinderProps>> = (props
   };
 
   const getFull: ContextGetFull = () => {
-    const data = getData();
+    const data: IDataContextFull = getData();
     const api = getApi();
-    if (!!api) 
+    if (api) 
       data.api = api;
-    data.setFieldValue = setFieldValue;
     return data;
   };
 
@@ -175,7 +176,7 @@ const DataContextBinder: FC<PropsWithChildren<IDataContextBinderProps>> = (props
 
   return (
     <ConditionalWrap
-      condition={!!props.metadata}
+      condition={props.metadata && (props.distributeMetadata ?? false)}
       wrap={children => <MetadataProvider id={id} modelType={id} dataType='context' > {children} </MetadataProvider>}
     >
       <DataContextProviderActionsContext.Provider value={{ ...actionContext }}>

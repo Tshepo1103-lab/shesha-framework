@@ -101,7 +101,7 @@ export const getSettings = (data) => {
                             .addSettingsInput({
                                 id: nanoid(),
                                 propertyName: 'hidden',
-                                label: 'Hidden',
+                                label: 'hide',
                                 parentId: 'root',
                                 inputType: 'switch',
                                 jsSetting: true
@@ -156,7 +156,7 @@ export const getSettings = (data) => {
                                                                 dropdownOptions: fontTypes,
                                                             },
                                                             {
-                                                                type: 'number',
+                                                                type: 'numberField',
                                                                 id: 'fontSize-s4gmBg31azZC0UjZjpfTm',
                                                                 label: 'Size',
                                                                 propertyName: 'font.size',
@@ -174,7 +174,7 @@ export const getSettings = (data) => {
                                                                 width: 100,
                                                             },
                                                             {
-                                                                type: 'color',
+                                                                type: 'colorPicker',
                                                                 id: 'fontColor-s4gmBg31azZC0UjZjpfTm',
                                                                 label: 'Color',
                                                                 hideLabel: true,
@@ -204,7 +204,7 @@ export const getSettings = (data) => {
                                                         readOnly: { _code: 'return  getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                                                         inputs: [
                                                             {
-                                                                type: 'text',
+                                                                type: 'textField',
                                                                 id: 'width-s4gmBg31azZC0UjZjpfTm',
                                                                 label: "Width",
                                                                 width: 85,
@@ -214,7 +214,7 @@ export const getSettings = (data) => {
 
                                                             },
                                                             {
-                                                                type: 'text',
+                                                                type: 'textField',
                                                                 id: 'minWidth-s4gmBg31azZC0UjZjpfTm',
                                                                 label: "Min Width",
                                                                 width: 85,
@@ -223,7 +223,7 @@ export const getSettings = (data) => {
                                                                 icon: "minWidthIcon",
                                                             },
                                                             {
-                                                                type: 'text',
+                                                                type: 'textField',
                                                                 id: 'maxWidth-s4gmBg31azZC0UjZjpfTm',
                                                                 label: "Max Width",
                                                                 width: 85,
@@ -240,7 +240,7 @@ export const getSettings = (data) => {
                                                         readOnly: { _code: 'return  getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                                                         inputs: [
                                                             {
-                                                                type: 'text',
+                                                                type: 'textField',
                                                                 id: 'height-s4gmBg31azZC0UjZjpfTm',
                                                                 label: "Height",
                                                                 width: 85,
@@ -249,7 +249,7 @@ export const getSettings = (data) => {
                                                                 tooltip: "You can use any unit (%, px, em, etc). px by default if without unit"
                                                             },
                                                             {
-                                                                type: 'text',
+                                                                type: 'textField',
                                                                 id: 'minHeight-s4gmBg31azZC0UjZjpfTm',
                                                                 label: "Min Height",
                                                                 width: 85,
@@ -258,7 +258,7 @@ export const getSettings = (data) => {
                                                                 icon: "minHeightIcon",
                                                             },
                                                             {
-                                                                type: 'text',
+                                                                type: 'textField',
                                                                 id: 'maxHeight-s4gmBg31azZC0UjZjpfTm',
                                                                 label: "Max Height",
                                                                 width: 85,
@@ -266,19 +266,6 @@ export const getSettings = (data) => {
                                                                 propertyName: "dimensions.maxHeight",
                                                                 icon: "maxHeightIcon",
                                                             }
-                                                        ]
-                                                    })
-                                                    .addSettingsInput({
-                                                        id: 'predefinedSizes',
-                                                        inputType: 'dropdown',
-                                                        propertyName: 'size',
-                                                        label: 'Size',
-                                                        width: '150px',
-                                                        hidden: { _code: 'return  getSettingValue(data?.dimensions?.width) || getSettingValue(data?.dimensions?.height);', _mode: 'code', _value: false } as any,
-                                                        dropdownOptions: [
-                                                            { value: 'small', label: 'Small' },
-                                                            { value: 'medium', label: 'Medium' },
-                                                            { value: 'large', label: 'Large' },
                                                         ]
                                                     })
                                                     .toJson()
@@ -313,36 +300,16 @@ export const getSettings = (data) => {
                                                             },
                                                         ]
                                                     })
-                                                    .addSettingsInputRow(
-                                                        getBorderInputs()[0] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getBorderInputs()[1] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getBorderInputs()[2] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getBorderInputs()[3] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getBorderInputs()[4] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getCornerInputs()[0] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getCornerInputs()[1] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getCornerInputs()[2] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getCornerInputs()[3] as any
-                                                    )
-                                                    .addSettingsInputRow(
-                                                        getCornerInputs()[4] as any
-                                                    )
+                                                    .addContainer({
+                                                        id: 'borderStyleRow',
+                                                        parentId: 'borderStylePnl',
+                                                        components: getBorderInputs() as any
+                                                    })
+                                                    .addContainer({
+                                                        id: 'borderRadiusStyleRow',
+                                                        parentId: 'borderStylePnl',
+                                                        components: getCornerInputs() as any
+                                                    })
                                                     .toJson()
                                                 ]
                                             }
@@ -400,7 +367,7 @@ export const getSettings = (data) => {
                                                             id: "backgroundStyleRow-color",
                                                             parentId: "backgroundStylePnl",
                                                             inputs: [{
-                                                                type: 'color',
+                                                                type: 'colorPicker',
                                                                 id: 'backgroundStyleRow-color',
                                                                 label: "Color",
                                                                 propertyName: "background.color",
@@ -429,7 +396,7 @@ export const getSettings = (data) => {
                                                             id: "backgroundStyle-url",
                                                             parentId: "backgroundStylePnl",
                                                             inputs: [{
-                                                                type: 'text',
+                                                                type: 'textField',
                                                                 id: 'backgroundStyle-url',
                                                                 propertyName: "background.url",
                                                                 jsSetting: false,
@@ -458,7 +425,7 @@ export const getSettings = (data) => {
                                                             readOnly: { _code: 'return  getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                                                             inputs: [
                                                                 {
-                                                                    type: 'text',
+                                                                    type: 'textField',
                                                                     id: 'backgroundStyle-storedFile',
                                                                     jsSetting: false,
                                                                     propertyName: "background.storedFile.id",
@@ -470,6 +437,7 @@ export const getSettings = (data) => {
                                                             id: "backgroundStyleRow-controls",
                                                             parentId: 'backgroundStyleRow',
                                                             inline: true,
+                                                            hidden: { _code: 'return  getSettingValue(data[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.background?.type) === "color";', _mode: 'code', _value: false } as any,
                                                             readOnly: { _code: 'return  getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                                                             inputs: [
                                                                 {
@@ -570,7 +538,7 @@ export const getSettings = (data) => {
                                                         readOnly: { _code: 'return  getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                                                         inputs: [
                                                             {
-                                                                type: 'number',
+                                                                type: 'numberField',
                                                                 id: 'shadowStyleRow-offsetX',
                                                                 label: 'Offset X',
                                                                 hideLabel: true,
@@ -579,7 +547,7 @@ export const getSettings = (data) => {
                                                                 propertyName: 'shadow.offsetX',
                                                             },
                                                             {
-                                                                type: 'number',
+                                                                type: 'numberField',
                                                                 id: 'shadowStyleRow-offsetY',
                                                                 label: 'Offset Y',
                                                                 hideLabel: true,
@@ -588,7 +556,7 @@ export const getSettings = (data) => {
                                                                 propertyName: 'shadow.offsetY',
                                                             },
                                                             {
-                                                                type: 'number',
+                                                                type: 'numberField',
                                                                 id: 'shadowStyleRow-blurRadius',
                                                                 label: 'Blur',
                                                                 hideLabel: true,
@@ -597,7 +565,7 @@ export const getSettings = (data) => {
                                                                 propertyName: 'shadow.blurRadius',
                                                             },
                                                             {
-                                                                type: 'number',
+                                                                type: 'numberField',
                                                                 id: 'shadowStyleRow-spreadRadius',
                                                                 label: 'Spread',
                                                                 hideLabel: true,
@@ -606,7 +574,7 @@ export const getSettings = (data) => {
                                                                 propertyName: 'shadow.spreadRadius',
                                                             },
                                                             {
-                                                                type: 'color',
+                                                                type: 'colorPicker',
                                                                 id: 'shadowStyleRow-color',
                                                                 label: 'Color',
                                                                 hideLabel: true,
@@ -695,7 +663,7 @@ export const getSettings = (data) => {
                                                             {
                                                                 id: 'primary-color-412c-8461-4c8d55e5c073',
                                                                 parentId: 'additionalStylesPnl',
-                                                                type: 'color',
+                                                                type: 'colorPicker',
                                                                 propertyName: 'primaryBgColor',
                                                                 hideLabel: false,
                                                                 label: 'Primary Color'
@@ -703,7 +671,7 @@ export const getSettings = (data) => {
                                                             {
                                                                 id: 'primary-text-color-412c-8461-4c8d55e5c073',
                                                                 parentId: 'additionalStylesPnl',
-                                                                type: 'color',
+                                                                type: 'colorPicker',
                                                                 propertyName: 'primaryTextColor',
                                                                 hideLabel: false,
                                                                 label: 'Primary Text Color'
@@ -718,7 +686,7 @@ export const getSettings = (data) => {
                                                             {
                                                                 id: 'secondary-color-412c-8461-4c8d55e5c073',
                                                                 parentId: 'additionalStylesPnl',
-                                                                type: 'color',
+                                                                type: 'colorPicker',
                                                                 propertyName: 'secondaryBgColor',
                                                                 hideLabel: false,
                                                                 label: 'Secondary Color'
@@ -726,7 +694,7 @@ export const getSettings = (data) => {
                                                             {
                                                                 id: 'secondary-text-color-412c-8461-4c8d55e5c073',
                                                                 parentId: 'additionalStylesPnl',
-                                                                type: 'color',
+                                                                type: 'colorPicker',
                                                                 propertyName: 'secondaryTextColor',
                                                                 hideLabel: false,
                                                                 label: 'Secondary Text Color'
