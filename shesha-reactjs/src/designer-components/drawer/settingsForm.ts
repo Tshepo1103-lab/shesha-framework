@@ -42,7 +42,7 @@ export const getSettings = (data: any) => {
                       label: 'Header Title',
                       size: 'large',
                       jsSetting: true,
-                    }
+                    },
                   ],
                   hidden: {
                     _code: 'return  !getSettingValue(data?.showHeader);',
@@ -105,58 +105,77 @@ export const getSettings = (data: any) => {
                           } as any,
                           parentId: 'pnl24bf6-f76d-4139-a850-c99bf06c8b69',
                           components: new DesignerToolbarSettings()
-                            .addSectionSeparator({
+                            .addCollapsiblePanel({
                               id: nanoid(),
-                              propertyName: 'okButtonSeparator',
-                              label: 'Ok button',
-                            })
-                            .addConfigurableActionConfigurator({
-                              id: nanoid(),
-                              propertyName: 'onOkAction',
-                              parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
+                              propertyName: 'okAction',
                               label: 'Ok Action',
-                            })
-                            .addSettingsInput({
-                              id: nanoid(),
-                              propertyName: 'okText',
                               parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
-                              label: 'Ok Text',
-                              description: 'The text that will be displayed on the Ok button',
+                              collapsible: 'header',
+                              ghost: true,
+                              content: {
+                                id: nanoid(),
+                                components: [
+                                  ...new DesignerToolbarSettings()
+                                    .addConfigurableActionConfigurator({
+                                      id: nanoid(),
+                                      propertyName: 'onOkAction',
+                                      label: 'Ok Button',
+                                      parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
+                                    })
+                                    .addSettingsInput({
+                                      id: nanoid(),
+                                      propertyName: 'okText',
+                                      label: 'Ok Text',
+                                      description: 'The text that will be displayed on the Ok button',
+                                      parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
+                                    })
+                                    .addSettingsInput({
+                                      id: nanoid(),
+                                      propertyName: 'okButtonCustomEnabled',
+                                      label: 'Custom Enabled',
+                                      inputType: 'codeEditor',
+                                      description: 'Enter custom enabled of the Ok button',
+                                      parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
+                                    })
+                                    .toJson(),
+                                ],
+                              },
                             })
-                            .addSettingsInput({
+                            .addCollapsiblePanel({
                               id: nanoid(),
-                              propertyName: 'okButtonCustomEnabled',
+                              propertyName: 'cancelAction',
+                              label: 'Cancel Button',
                               parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
-                              label: 'Custom Enabled',
-                              inputType: 'codeEditor',
-                              description: 'Enter custom enabled of the Ok button',
-                            })
-                            .addSectionSeparator({
-                              id: nanoid(),
-                              propertyName: 'cancelButtonSeparator',
-                              label: 'Cancel button',
-                              parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
-                            })
-                            .addConfigurableActionConfigurator({
-                              id: nanoid(),
-                              propertyName: 'onCancelAction',
-                              label: 'Ok Cancel',
-                              parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
-                            })
-                            .addSettingsInput({
-                              id: nanoid(),
-                              propertyName: 'cancelText',
-                              label: 'Cancel Text',
-                              description: 'The text that will be displayed on the Cancel button',
-                              parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
-                            })
-                            .addSettingsInput({
-                              id: nanoid(),
-                              propertyName: 'cancelButtonCustomEnabled',
-                              label: 'Custom Enabled',
-                              inputType: 'codeEditor',
-                              description: 'Enter custom enabled of the Cancel button',
-                              parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
+                              collapsible: 'header',
+                              ghost: true,
+                              content: {
+                                id: nanoid(),
+                                components: [
+                                  ...new DesignerToolbarSettings()
+                                    .addConfigurableActionConfigurator({
+                                      id: nanoid(),
+                                      propertyName: 'onCancelAction',
+                                      label: 'Ok Cancel',
+                                      parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
+                                    })
+                                    .addSettingsInput({
+                                      id: nanoid(),
+                                      propertyName: 'cancelText',
+                                      label: 'Cancel Text',
+                                      description: 'The text that will be displayed on the Cancel button',
+                                      parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
+                                    })
+                                    .addSettingsInput({
+                                      id: nanoid(),
+                                      propertyName: 'cancelButtonCustomEnabled',
+                                      label: 'Custom Enabled',
+                                      inputType: 'codeEditor',
+                                      description: 'Enter custom enabled of the Cancel button',
+                                      parentId: 'ccc24bf6-f76d-4139-a850-c99bf06c8b69',
+                                    })
+                                    .toJson(),
+                                ],
+                              },
                             })
                             .toJson(),
                         })
@@ -238,7 +257,7 @@ export const getSettings = (data: any) => {
                                     width: 85,
                                     defaultValue: '100%',
                                     propertyName: 'width',
-                                    icon: "widthIcon",
+                                    icon: 'widthIcon',
                                     tooltip: 'You can use any unit (%, px, em, etc). px by default if without unit',
                                   },
                                 ],
@@ -454,7 +473,12 @@ export const getSettings = (data: any) => {
                               .addSettingsInputRow({
                                 id: 'backgroundStyleRow-controls',
                                 parentId: 'backgroundStyleRow',
-                                hidden: { _code: 'return  getSettingValue(data[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.background?.type) === "color";', _mode: 'code', _value: false } as any,
+                                hidden: {
+                                  _code:
+                                    'return  getSettingValue(data[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.background?.type) === "color";',
+                                  _mode: 'code',
+                                  _value: false,
+                                } as any,
                                 inline: true,
                                 readOnly: {
                                   _code: 'return  getSettingValue(data?.readOnly);',
@@ -531,9 +555,9 @@ export const getSettings = (data: any) => {
                                   {
                                     type: 'radio',
                                     id: 'backgroundStyleRow-repeat',
-                                    label: "Repeat",
+                                    label: 'Repeat',
                                     hideLabel: true,
-                                    propertyName: "background.repeat",
+                                    propertyName: 'background.repeat',
                                     buttonGroupOptions: repeatOptions,
                                   },
                                 ],
@@ -583,12 +607,12 @@ export const getSettings = (data: any) => {
                               .addContainer({
                                 id: 'borderStyleRow',
                                 parentId: 'borderStylePnl',
-                                components: getBorderInputs() as any
+                                components: getBorderInputs() as any,
                               })
                               .addContainer({
                                 id: 'borderRadiusStyleRow',
                                 parentId: 'borderStylePnl',
-                                components: getCornerInputs() as any
+                                components: getCornerInputs() as any,
                               })
                               .toJson(),
                           ],
@@ -907,7 +931,12 @@ export const getSettings = (data: any) => {
                                       .addSettingsInputRow({
                                         id: 'backgroundStyleRow-controls',
                                         parentId: 'backgroundStyleRow',
-                                        hidden: { _code: 'return  getSettingValue(data[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.background?.type) === "color";', _mode: 'code', _value: false } as any,
+                                        hidden: {
+                                          _code:
+                                            'return  getSettingValue(data[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.background?.type) === "color";',
+                                          _mode: 'code',
+                                          _value: false,
+                                        } as any,
                                         inline: true,
                                         readOnly: {
                                           _code: 'return  getSettingValue(data?.readOnly);',
@@ -984,9 +1013,9 @@ export const getSettings = (data: any) => {
                                           {
                                             type: 'radio',
                                             id: 'backgroundStyleRow-repeat',
-                                            label: "Repeat",
+                                            label: 'Repeat',
                                             hideLabel: true,
-                                            propertyName: "background.repeat",
+                                            propertyName: 'background.repeat',
                                             buttonGroupOptions: repeatOptions,
                                           },
                                         ],
@@ -1275,7 +1304,12 @@ export const getSettings = (data: any) => {
                                       .addSettingsInputRow({
                                         id: 'footerBackground-controls',
                                         parentId: 'backgroundStyleRow',
-                                        hidden: { _code: 'return  getSettingValue(data[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.background?.type) === "color";', _mode: 'code', _value: false } as any,
+                                        hidden: {
+                                          _code:
+                                            'return  getSettingValue(data[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.background?.type) === "color";',
+                                          _mode: 'code',
+                                          _value: false,
+                                        } as any,
                                         inline: true,
                                         readOnly: {
                                           _code: 'return  getSettingValue(data?.readOnly);',
@@ -1352,9 +1386,9 @@ export const getSettings = (data: any) => {
                                           {
                                             type: 'radio',
                                             id: 'backgroundStyleRow-repeat',
-                                            label: "Repeat",
+                                            label: 'Repeat',
                                             hideLabel: true,
-                                            propertyName: "background.repeat",
+                                            propertyName: 'background.repeat',
                                             buttonGroupOptions: repeatOptions,
                                           },
                                         ],
