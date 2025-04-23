@@ -115,6 +115,7 @@ const FileUploadComponent: IToolboxComponent<IFileUploadProps> = {
       ...fontStyles,
       ...backgroundStyles,
       ...shadowStyles,
+      jsStyle,
     });
 
     const finalStyle = removeUndefinedProps(additionalStyles);
@@ -156,7 +157,6 @@ const FileUploadComponent: IToolboxComponent<IFileUploadProps> = {
                 allowedFileTypes={model?.allowedFileTypes}
                 isDragger={model?.isDragger}
                 styles={finalStyle}
-                jsStyle={jsStyle}
               />
             </StoredFileProvider>
           );

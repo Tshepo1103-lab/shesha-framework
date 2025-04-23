@@ -37,7 +37,6 @@ export interface IFileUploadProps {
   hideFileName?: boolean;
   styles?: any;
   primaryColor?: string;
-  jsStyle?: any;
 }
 
 export const FileUpload: FC<IFileUploadProps> = ({
@@ -52,7 +51,6 @@ export const FileUpload: FC<IFileUploadProps> = ({
   hideFileName = false,
   styles: stylesProp,
   primaryColor,
-  jsStyle,
 }) => {
   const {
     fileInfo,
@@ -190,7 +188,7 @@ export const FileUpload: FC<IFileUploadProps> = ({
             {isUploading ? (
               <SyncOutlined spin />
             ) : (
-              <div className="thumbnail-item-name" style={listType !== 'thumbnail' ? jsStyle : {}}>
+              <div className="thumbnail-item-name">
                 {(listType === 'text' || !hideFileName) && (
                   <a
                     style={{ marginRight: '5px' }}

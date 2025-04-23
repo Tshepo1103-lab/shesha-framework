@@ -16,7 +16,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
     borderLeftStyle,
     borderRightColor,
     borderRightStyle,
-    borderColor = 'transparent',
+    borderColor = '#d9d9d9',
     borderTopStyle,
     borderTopColor,
     borderTop,
@@ -127,12 +127,14 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
         --font-size: ${fontSize} !important;
         --ant-font-size: ${fontSize} !important;
         border-radius: ${borderRadius} !important;
+        border: 1px dashed ${borderColor} !important;
         display: flex;
 
         :before {
           top: 0;
           width: 100% !important;
           border-radius: ${borderRadius} !important;
+          border: 1px dashed ${borderColor} !important;
           height: 100% !important;
         }
       }
@@ -154,6 +156,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
             color: ${primaryColor} !important;
           }
         }
+        ${listType !== 'thumbnail' && style?.jsStyle}
       }
 
       .thumbnail-stub {
@@ -161,6 +164,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        border: 1px ${borderStyle} ${borderColor} !important;
         ${style}
       }
 
