@@ -1,6 +1,6 @@
 import { createStyles } from '@/styles';
 
-export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, model }) => {
+export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, model, primaryColor }) => {
   const {
     background = 'transparent',
     backgroundImage,
@@ -117,7 +117,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
 
       .ant-upload:not(.ant-upload-disabled) {
         .icon {
-          color: ${color || token.colorPrimary} !important;
+          color: ${primaryColor || token.colorPrimary} !important;
         }
       }
 
@@ -143,18 +143,16 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
         ${commonBorderStyles}
       }
 
-      .ant-upload-list-item-name {
-        ${commonTextStyles}
-        padding: 0 8px !important;
-        width: ${(layout && width) ?? '54px'} !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-      }
-
       .thumbnail-item-name {
         ${commonTextStyles}
+        a {
+          ${commonTextStyles}
+        }
+        .ant-space {
+          .anticon {
+            color: ${primaryColor} !important;
+          }
+        }
       }
 
       .thumbnail-stub {
@@ -166,6 +164,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
       }
 
       .ant-upload-list-text {
+        ${commonTextStyles}
         height: calc(var(--container-height) - 32px) !important;
         max-height: calc(var(--container-max-height) - calc(${fontSize} * 4)) !important;
         min-height: calc(var(--container-min-height) - 32px) !important;
@@ -196,6 +195,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
       }
 
       .ant-btn {
+        color: ${primaryColor || token.colorPrimary} !important;
         padding: 0;
         * {
           font-size: ${fontSize} !important;

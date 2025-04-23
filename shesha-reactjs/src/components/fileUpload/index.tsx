@@ -36,6 +36,7 @@ export interface IFileUploadProps {
   borderRadius?: number;
   hideFileName?: boolean;
   styles?: any;
+  primaryColor?: string;
 }
 
 export const FileUpload: FC<IFileUploadProps> = ({
@@ -49,6 +50,7 @@ export const FileUpload: FC<IFileUploadProps> = ({
   listType = 'text',
   hideFileName = false,
   styles: stylesProp,
+  primaryColor,
 }) => {
   const {
     fileInfo,
@@ -61,6 +63,7 @@ export const FileUpload: FC<IFileUploadProps> = ({
 
   const props = {
     style: stylesProp,
+    primaryColor,
     model: {
       layout: listType === 'thumbnail' && !isDragger,
       isDragger,
@@ -135,7 +138,7 @@ export const FileUpload: FC<IFileUploadProps> = ({
           <DeleteOutlined title="Remove" />
         </a>
       )}
-      {isImageType(fileInfo?.type) ? (
+      {listType === 'thumbnail' && (isImageType(fileInfo?.type) ? (
         <a onClick={onPreview} style={{ color: color }}>
           <EyeOutlined title="Preview" />
         </a>
@@ -145,7 +148,7 @@ export const FileUpload: FC<IFileUploadProps> = ({
             <DownloadOutlined title="Download" />
           </a>
         )
-      )}
+      ))}
     </Space>
   );
 
@@ -185,9 +188,9 @@ export const FileUpload: FC<IFileUploadProps> = ({
                 {(listType === 'text' || !hideFileName) && (
                   <a
                     style={{ marginRight: '5px' }}
-                    onClick={() => downloadFile({ fileId: file.id, fileName: file.name })}
+                    onClick={isImageType(file.type) ? onPreview : () => downloadFile({ fileId: file.id, fileName: file.name })}
                   >
-                    {`${file.name} (${filesize(file.size)})`}
+                    {listType !== 'thumbnail' && getFileIcon(file?.type)} {`${file.name} (${filesize(file.size)})`}
                   </a>
                 )}
                 {showTextControls && fileControls(theme.application.primaryColor)}
@@ -284,12 +287,12 @@ export const FileUpload: FC<IFileUploadProps> = ({
             onVisibleChange: (visible) => setPreviewOpen(visible),
             toolbarRender: (original) => (
               <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
-                {hideFileName && (
+                {
                   <DownloadOutlined
                     className={styles.antPreviewDownloadIcon}
                     onClick={() => downloadFile({ fileId: previewImage?.uid, fileName: previewImage?.name })}
                   />
-                )}
+                }
                 {original}
               </div>
             ),

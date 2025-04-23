@@ -299,6 +299,13 @@ export const getSettings = () => {
                               },
                             ],
                           })
+                          .addSettingsInput({
+                            id: 'primary-color',
+                            propertyName: 'primaryColor',
+                            label: 'Primary Color',
+                            inputType: 'colorPicker',
+                            jsSetting: true,
+                          })
                           .toJson()
                         ]
                       }

@@ -189,14 +189,6 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
         }
       }
 
-      .ant-upload-list-item-action {
-       > .ant-btn-icon{
-        >.anticon-delete{
-          color: ${token.colorError} !important;
-        }
-       }
-      }
-
       .thumbnail-stub {
         display: flex;
         flex-direction: column;
