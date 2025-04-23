@@ -41,7 +41,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
     textAlign = 'center',
   } = style || {};
 
-  const { layout, isDragger, hideFileName } = model;
+  const { layout, isDragger, hideFileName, listType } = model;
 
   const antUploadDragIcon = `${prefixCls}-upload-drag-icon`;
   const antUploadText = `${prefixCls}-upload-text`;
@@ -141,6 +141,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
         border-radius: ${borderRadius} !important;
         padding: 0 !important;
         ${commonBorderStyles}
+        ${style}
       }
 
       .thumbnail-item-name {
@@ -202,6 +203,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
           font-weight: ${fontWeight} !important;
           font-family: ${fontFamily} !important;
         }
+        ${listType !== 'thumbnail' && style}
       }
 
       .ant-upload-list-item-container {
@@ -216,6 +218,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
           animation: none !important;
           transition: none !important;
         }
+        ${listType !== 'thumbnail' && style}
       }
     `
   );
@@ -294,6 +297,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
           object-fit: cover !important;
         }
       }
+      ${style}
     `
   );
 

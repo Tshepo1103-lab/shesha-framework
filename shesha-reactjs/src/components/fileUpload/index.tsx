@@ -37,6 +37,7 @@ export interface IFileUploadProps {
   hideFileName?: boolean;
   styles?: any;
   primaryColor?: string;
+  jsStyle?: any;
 }
 
 export const FileUpload: FC<IFileUploadProps> = ({
@@ -51,6 +52,7 @@ export const FileUpload: FC<IFileUploadProps> = ({
   hideFileName = false,
   styles: stylesProp,
   primaryColor,
+  jsStyle,
 }) => {
   const {
     fileInfo,
@@ -60,7 +62,6 @@ export const FileUpload: FC<IFileUploadProps> = ({
     isInProgress: { uploadFile: isUploading },
   } = useStoredFile();
   const { backendUrl, httpHeaders } = useSheshaApplication();
-
   const props = {
     style: stylesProp,
     primaryColor,
@@ -68,6 +69,7 @@ export const FileUpload: FC<IFileUploadProps> = ({
       layout: listType === 'thumbnail' && !isDragger,
       isDragger,
       hideFileName,
+      listType,
     },
   };
   const { styles } = useStyles(props);
@@ -138,17 +140,21 @@ export const FileUpload: FC<IFileUploadProps> = ({
           <DeleteOutlined title="Remove" />
         </a>
       )}
-      {listType === 'thumbnail' && (isImageType(fileInfo?.type) ? (
-        <a onClick={onPreview} style={{ color: color }}>
-          <EyeOutlined title="Preview" />
-        </a>
-      ) : (
-        hideFileName && (
-          <a onClick={() => downloadFile({ fileId: fileInfo?.id, fileName: fileInfo?.name })} style={{ color: color }}>
-            <DownloadOutlined title="Download" />
+      {listType === 'thumbnail' &&
+        (isImageType(fileInfo?.type) ? (
+          <a onClick={onPreview} style={{ color: color }}>
+            <EyeOutlined title="Preview" />
           </a>
-        )
-      ))}
+        ) : (
+          hideFileName && (
+            <a
+              onClick={() => downloadFile({ fileId: fileInfo?.id, fileName: fileInfo?.name })}
+              style={{ color: color }}
+            >
+              <DownloadOutlined title="Download" />
+            </a>
+          )
+        ))}
     </Space>
   );
 
@@ -184,11 +190,13 @@ export const FileUpload: FC<IFileUploadProps> = ({
             {isUploading ? (
               <SyncOutlined spin />
             ) : (
-              <div className="thumbnail-item-name">
+              <div className="thumbnail-item-name" style={listType !== 'thumbnail' ? jsStyle : {}}>
                 {(listType === 'text' || !hideFileName) && (
                   <a
                     style={{ marginRight: '5px' }}
-                    onClick={isImageType(file.type) ? onPreview : () => downloadFile({ fileId: file.id, fileName: file.name })}
+                    onClick={
+                      isImageType(file.type) ? onPreview : () => downloadFile({ fileId: file.id, fileName: file.name })
+                    }
                   >
                     {listType !== 'thumbnail' && getFileIcon(file?.type)} {`${file.name} (${filesize(file.size)})`}
                   </a>

@@ -59,7 +59,7 @@ const FileUploadComponent: IToolboxComponent<IFileUploadProps> = {
     const font = model?.font;
     const shadow = model?.shadow;
     const background = model?.background;
-    const jsStyle = getStyle(model.style, model);
+    const jsStyle = getStyle(model?.style, model);
 
     const dimensionsStyles = useMemo(() => getDimensionsStyle(dimensions), [dimensions]);
     const borderStyles = useMemo(() => getBorderStyle(border, jsStyle), [border, jsStyle]);
@@ -103,7 +103,7 @@ const FileUploadComponent: IToolboxComponent<IFileUploadProps> = {
           URL.revokeObjectURL(objectUrl);
         }
       };
-    }, [background, backendUrl, httpHeaders, jsStyle]);
+    }, [background, backendUrl, httpHeaders]);
 
     const styling = JSON.parse(model.stylingBox || '{}');
     const stylingBoxAsCSS = pickStyleFromModel(styling);
@@ -156,6 +156,7 @@ const FileUploadComponent: IToolboxComponent<IFileUploadProps> = {
                 allowedFileTypes={model?.allowedFileTypes}
                 isDragger={model?.isDragger}
                 styles={finalStyle}
+                jsStyle={jsStyle}
               />
             </StoredFileProvider>
           );
