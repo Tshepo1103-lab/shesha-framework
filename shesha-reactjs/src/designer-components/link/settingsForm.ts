@@ -123,6 +123,36 @@ export const getSettings = (data: any) => {
             id: 'elgrlievlfwehhh848r8hsdnflsdnclurbd',
             components: [
               ...new DesignerToolbarSettings()
+                .addSettingsInputRow({
+                  id: 'direction-options-row',
+                  parentId: 'styleRouter',
+                  hidden: {
+                    _code: 'return  !getSettingValue(data?.hasChildren);',
+                    _mode: 'code',
+                    _value: false,
+                  } as any,
+                  inputs: [
+                    {
+                      type: 'dropdown',
+                      id: 'direction-s4gmBg31azZC0UjZjpfTm',
+                      propertyName: 'direction',
+                      label: 'Direction',
+                      jsSetting: true,
+                      layout: 'horizontal',
+                      defaultValue: 'vertical',
+                      dropdownOptions: [
+                        {
+                          label: 'Horizontal',
+                          value: 'horizontal',
+                        },
+                        {
+                          label: 'Vertical',
+                          value: 'vertical',
+                        },
+                      ],
+                    },
+                  ],
+                })
                 .addPropertyRouter({
                   id: 'styleRouter',
                   propertyName: 'propertyRouter1',
@@ -138,36 +168,6 @@ export const getSettings = (data: any) => {
                   },
                   components: [
                     ...new DesignerToolbarSettings()
-                      .addSettingsInputRow({
-                        id: 'direction-options-row',
-                        parentId: 'styleRouter',
-                        hidden: {
-                          _code: 'return  !getSettingValue(data?.hasChildren);',
-                          _mode: 'code',
-                          _value: false,
-                        } as any,
-                        inputs: [
-                          {
-                            type: 'dropdown',
-                            id: 'direction-s4gmBg31azZC0UjZjpfTm',
-                            propertyName: 'direction',
-                            label: 'Direction',
-                            jsSetting: true,
-                            layout: 'horizontal',
-                            defaultValue: 'vertical',
-                            dropdownOptions: [
-                              {
-                                label: 'Horizontal',
-                                value: 'horizontal',
-                              },
-                              {
-                                label: 'Vertical',
-                                value: 'vertical',
-                              },
-                            ],
-                          },
-                        ],
-                      })
                       .addCollapsiblePanel({
                         id: 'fontStyleCollapsiblePanel',
                         propertyName: 'pnlFontStyle',
@@ -243,7 +243,8 @@ export const getSettings = (data: any) => {
                         id: 'layout-options-row2',
                         parentId: 'styleRouter',
                         hidden: {
-                          _code: 'return  getSettingValue(data?[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.direction) !== "horizontal"',
+                          _code:
+                            'return  getSettingValue(data?.direction) !== "horizontal"',
                           _mode: 'code',
                           _value: false,
                         } as any,
@@ -377,7 +378,8 @@ export const getSettings = (data: any) => {
                             propertyName: 'justifyItems',
                             label: 'Justify Items',
                             hidden: {
-                              _code: 'return  getSettingValue(data?[`${contexts.canvasContext?.designerDevice || "desktop"}`]?.direction) !== "horizontal"',
+                              _code:
+                                'return  getSettingValue(data?.direction) !== "horizontal"',
                               _mode: 'code',
                               _value: false,
                             } as any,
