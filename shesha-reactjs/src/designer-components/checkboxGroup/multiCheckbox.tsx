@@ -2,7 +2,7 @@ import { useGet } from '@/hooks';
 import { executeScriptSync } from '@/index';
 import { useReferenceList } from '@/providers/referenceListDispatcher';
 import { nanoid } from '@/utils/uuid';
-import { Checkbox } from 'antd';
+import { Checkbox, CheckboxProps, Space } from 'antd';
 import React, { CSSProperties, FC, useEffect, useMemo } from 'react';
 import { getDataSourceList } from '../radio/utils';
 import { ICheckboxGroupProps } from './utils';
@@ -41,20 +41,36 @@ const MultiCheckbox: FC<ICheckboxGroupProps> = (model) => {
     flexWrap: direction === 'vertical' ? 'nowrap' : 'wrap',
     gap: '8px',
   };
+
+  interface ExtendedCheckboxProps extends CheckboxProps {
+    onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  }
+
   return (
-    <div
-      tabIndex={0}
-      onFocus={(e) => model.onFocus?.({ ...e, target: { value: value, ...e.target } })}
-      onBlur={(e) => model.onBlur?.({ ...e, target: { value: value, ...e.target } })}
+    <Checkbox.Group
+      className="sha-multi-checkbox"
+      value={value}
+      onChange={onChange}
+      style={checkboxGroupStyle}
     >
-      <Checkbox.Group
-        className="sha-multi-checkbox"
-        value={value}
-        onChange={onChange}
-        style={checkboxGroupStyle}
-        options={options}
-      />
-    </div>
+      <Space direction={model.direction}>
+
+        {options?.map((checkItem, index) => (
+          <Checkbox
+            key={index}
+            value={`${checkItem.value}`}
+            disabled={model.readOnly}
+            onBlur={model.onBlur}
+            onFocus={model.onFocus}
+            {...({} as ExtendedCheckboxProps)}
+          >
+            hi
+            {checkItem.label}
+          </Checkbox>
+        ))}
+      </Space>
+    </Checkbox.Group>
   );
 };
 

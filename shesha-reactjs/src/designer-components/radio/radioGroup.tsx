@@ -1,4 +1,4 @@
-import { Radio, Space } from 'antd';
+import { Radio, RadioProps, Space } from 'antd';
 import React, { FC, useEffect, useMemo } from 'react';
 import { useGet } from '@/hooks';
 import { useReferenceList } from '@/providers/referenceListDispatcher';
@@ -10,7 +10,7 @@ const RadioGroup: FC<IRadioProps> = (model) => {
   const { data: refListItems } = useReferenceList(referenceListId);
 
   //#region Data source is url
-    const { refetch, data } = useGet({ path: model.dataSourceUrl, lazy: true });
+  const { refetch, data } = useGet({ path: model.dataSourceUrl, lazy: true });
 
   useEffect(() => {
     if (model.dataSourceType === 'url' && model.dataSourceUrl) {
@@ -42,20 +42,30 @@ const RadioGroup: FC<IRadioProps> = (model) => {
 
   const val = value ? `${value}` : defaultValue;
 
+  interface ExtendedRadioProps extends RadioProps {
+    onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  }
+
   const renderCheckGroup = () => (
     <Radio.Group
       className="sha-radio-group"
       disabled={model.readOnly}
       defaultValue={defaultValue}
       value={val}
-      onBlur={model.onBlur}
-      onFocus={model.onFocus}
       onChange={onChange}
       style={model.style}
     >
       <Space direction={model.direction}>
         {options?.map((checkItem, index) => (
-          <Radio key={index} value={`${checkItem.value}`} disabled={model.readOnly}>
+          <Radio
+            key={index}
+            value={`${checkItem.value}`}
+            disabled={model.readOnly}
+            onBlur={model.onBlur}
+            onFocus={model.onFocus}
+            {...({} as ExtendedRadioProps)}
+          >
             {checkItem.label}
           </Radio>
         ))}
