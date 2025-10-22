@@ -152,16 +152,35 @@ const StoredFilesProvider: FC<PropsWithChildren<IStoredFilesProviderProps>> = ({
 
     const { file } = payload;
 
+    // Normalize file extension to lowercase
+    const fileName = file.name;
+    const lastDotIndex = fileName.lastIndexOf('.');
+    const normalizedFileName = lastDotIndex > 0 
+      ? fileName.substring(0, lastDotIndex) + fileName.substring(lastDotIndex).toLowerCase()
+      : fileName;
+
+    // Create a normalized file object with lowercase extension
+    const normalizedFile = new File([file], normalizedFileName, {
+      type: file.type,
+      lastModified: file.lastModified
+    });
+
     formData.append('ownerId', payload.ownerId || ownerId);
     formData.append('ownerType', payload.ownerType || ownerType);
     formData.append('ownerName', payload.ownerName || ownerName);
-    formData.append('file', file);
+    formData.append('file', normalizedFile);
     if (filesCategory)
       formData.append('filesCategory', `${filesCategory}`);
     formData.append('propertyName', '');
 
-    // @ts-ignore
-    const newFile: IStoredFile = { uid: '', ...file, status: 'uploading', name: file.name };
+    const tempUid = (file as any)?.uid ?? Math.random().toString(36).slice(2);
+    const newFile: IStoredFile = { 
+      uid: tempUid, 
+      ...(normalizedFile as any), 
+      status: 'uploading', 
+      name: normalizedFileName,
+      type: normalizedFile.type
+    };
 
     if (!Boolean(payload.ownerId || ownerId) && typeof addDelayedUpdate !== 'function') {
       console.error('File list component is not configured');
@@ -272,7 +291,7 @@ const StoredFilesProvider: FC<PropsWithChildren<IStoredFilesProviderProps>> = ({
   };
 
   const downloadFile = (payload: IDownloadFilePayload) => {
-    const url = `${baseUrl}/api/StoredFile/Download?${qs.stringify({
+    const url = `${(baseUrl ?? backendUrl)}/api/StoredFile/Download?${qs.stringify({
       id: payload.fileId,
     })}`;
     axios({
