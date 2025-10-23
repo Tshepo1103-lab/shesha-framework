@@ -177,8 +177,8 @@ namespace Shesha.StoredFiles
                 {
                     storedFile.IsVersionControlled = true;
                     fileVersion = await _fileService.GetNewOrDefaultVersionAsync(storedFile);
-                    fileVersion.FileName = fileName;
-                    fileVersion.FileType = Path.GetExtension(fileName);
+                    fileVersion.FileName = fileName.ToLower();
+                    fileVersion.FileType = Path.GetExtension(fileName).ToLower();
                     await _fileVersionRepository.InsertOrUpdateAsync(fileVersion);
 
                     await using (var fileStream = input.File.OpenReadStream())
