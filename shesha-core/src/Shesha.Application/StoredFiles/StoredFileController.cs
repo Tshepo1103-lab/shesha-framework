@@ -177,8 +177,8 @@ namespace Shesha.StoredFiles
                 {
                     storedFile.IsVersionControlled = true;
                     fileVersion = await _fileService.GetNewOrDefaultVersionAsync(storedFile);
-                    fileVersion.FileName = fileName;
-                    fileVersion.FileType = Path.GetExtension(fileName);
+                    fileVersion.FileName = fileName.ToLower();
+                    fileVersion.FileType = Path.GetExtension(fileName).ToLower();
                     await _fileVersionRepository.InsertOrUpdateAsync(fileVersion);
 
                     await using (var fileStream = input.File.OpenReadStream())
@@ -187,8 +187,8 @@ namespace Shesha.StoredFiles
                     }
 
                     // copy to the main todo: remove duplicated properties (filename, filetype), add a link to the last version and update it using triggers
-                    storedFile.FileName = fileVersion.FileName;
-                    storedFile.FileType = fileVersion.FileType;
+                    storedFile.FileName = fileVersion.FileName.ToLower();
+                    storedFile.FileType = fileVersion.FileType.ToLower();
                     await _fileRepository.UpdateAsync(storedFile);
                 }
                 else
