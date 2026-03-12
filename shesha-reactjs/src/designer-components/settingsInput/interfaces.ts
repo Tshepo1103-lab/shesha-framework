@@ -468,6 +468,12 @@ export interface ILayerSelectorSettingsInputProps extends ISettingsInputBase {
   settings?: FormMarkup;
 }
 
+// Request Config Button
+export interface IRequestConfigButtonSettingsInputProps extends ISettingsInputBase {
+  type: 'requestConfigButton';
+}
+export const isRequestConfigButtonProps = (value: ISettingsInputBase): value is IRequestConfigButtonSettingsInputProps => value.type === 'requestConfigButton';
+
 // Common styling props that can be applied to multiple components
 export interface ICommonStylingProps {
   variant?: 'borderless' | 'filled' | 'outlined';
@@ -520,7 +526,8 @@ export type BaseInputProps =
   IKeyInformationBarColumnsInputProps |
   ISizableColumnsConfigSettingsInputProps |
   ILayerSelectorSettingsInputProps |
-  IThreeStateSwitchSettingsInputProps;
+  IThreeStateSwitchSettingsInputProps |
+  IRequestConfigButtonSettingsInputProps;
 
 export type InputTypes = BaseInputProps['type'];
 
