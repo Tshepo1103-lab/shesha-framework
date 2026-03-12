@@ -124,6 +124,8 @@ export interface IApplicationContext<Value extends object = object> {
   http: HttpClientApi;
   /** Message API */
   message: MessageInstance;
+  /** Loader API */
+  loader: LoaderApi;
   /** File Saver API */
   fileSaver: typeof FileSaver;
 
@@ -157,6 +159,11 @@ export type GetAvailableConstantsDataArgs<TValues extends object = object> = {
   queryStringGetter?: () => QueryStringParams;
 };
 
+export interface LoaderApi {
+  show: (message?: string) => () => void;
+  hide: () => void;
+}
+
 export type AvailableConstantsContext = {
   closestShaFormApi: IFormApi | undefined;
   selectedRow?: ISelectionProps | undefined;
@@ -165,6 +172,7 @@ export type AvailableConstantsContext = {
   globalState: IAnyObject | undefined;
   setGlobalState: (payload: ISetStatePayload) => void;
   message: MessageInstance;
+  loader: LoaderApi;
   httpClient: HttpClientApi;
 };
 
@@ -186,6 +194,9 @@ const useBaseAvailableConstantsContexts = (): AvailableConstantsContext => {
 
   const httpClient = useHttpClient();
 
+  // Get loader API from global loader provider
+  const loader = useGlobalLoader();
+
   const result: AvailableConstantsContext = {
     closestShaFormApi: undefined,
     selectedRow,
@@ -195,6 +206,7 @@ const useBaseAvailableConstantsContexts = (): AvailableConstantsContext => {
     setGlobalState,
     httpClient,
     message,
+    loader,
   };
   return result;
 };
@@ -292,6 +304,7 @@ export const wrapConstantsData = <TValues extends object = object>(args: WrapCon
     moment: () => moment,
     http: () => httpClient,
     message: () => message,
+    loader: () => loader,
     fileSaver: () => FileSaver,
     data: () => (!shaFormInstance ? EMPTY_DATA : GetShaFormDataAccessor<TValues>(shaFormInstance)) as TValues,
     form: () => shaFormInstance,

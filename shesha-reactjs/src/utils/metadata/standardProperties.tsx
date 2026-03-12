@@ -6,6 +6,7 @@ import { metadataSourceCode, metadataBuilderSourceCode, httpClientSourceCode, CO
 export const SheshaConstants = {
   http: "shesha:http",
   message: "shesha:message",
+  loader: "shesha:loader",
   fileSaver: "shesha:fileSaver",
   moment: "shesha:moment",
   globalState: "shesha:globalState",

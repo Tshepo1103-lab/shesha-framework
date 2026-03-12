@@ -95,17 +95,6 @@ export const useStyles = createStyles(({ css, cx }) => {
     }
   `);
 
-  // Blocking: dark dimmed backdrop that prevents all user interaction.
-  const globalLoaderOverlayBlocking = cx("global-loader-overlay-blocking", base, css`
-    background: rgba(0, 0, 0, 0.45);
-    pointer-events: auto;
-    cursor: not-allowed;
-
-    * {
-      pointer-events: none;
-    }
-  `);
-
   return {
     globalLoaderOverlay,
     globalLoaderOverlayBlocking,
