@@ -58,7 +58,7 @@ export interface FormInstance<Values> {
  */
 export interface FormApi<Values = any> {
   /**
-   * Add deferred update data to 'data' object 
+   * Add deferred update data to 'data' object
    * @param data model data object for updating
    * @returns The deferred update data
    */
@@ -71,7 +71,7 @@ export interface FormApi<Values = any> {
   setFieldValue: (name: string, value: any) => void;
   /**
    * Set fields value
-   * @param values 
+   * @param values
    */
   setFieldsValue: (values: Values) => void;
   /**
@@ -104,7 +104,7 @@ export interface FormApi<Values = any> {
   formMode: FormMode;
   /** Form data */
   data: Values;
-  
+
   /** Form arguments passed by caller */
   formArguments?: any;
 

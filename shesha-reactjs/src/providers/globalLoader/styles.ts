@@ -15,6 +15,37 @@ export const useStyles = createStyles(({ css, cx }) => {
   // rather than a structural DOM change.
   const base = css`
     position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px 24px;
+    z-index: 9999;
+    pointer-events: none; /* Don't block clicks */
+
+    .${contentContainer} {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .${loaderImage} {
+      width: 24px;
+      height: 24px;
+    }
+
+    .${loaderMessage} {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.85);
+      white-space: nowrap;
+    }
+  `;
+
+  // Blocking: Full-screen overlay that prevents all interaction
+  const globalLoaderOverlayBlocking = cx("global-loader-overlay-blocking", css`
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -51,7 +82,7 @@ export const useStyles = createStyles(({ css, cx }) => {
       white-space: nowrap;
       transition: all 0.3s ease-in-out;
     }
-  `;
+  `);
 
   // Non-blocking: transparent backdrop so the user can still interact with the page.
   // The card appears centred but clicks pass straight through the overlay.

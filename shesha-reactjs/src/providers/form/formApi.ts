@@ -79,6 +79,18 @@ export interface IFormApi<Values extends object = object> {
   /** Set validation errors. Need for display validation errors in the ValidationErrors component */
   setValidationErrors: (payload: string | IErrorInfo | IAjaxResponseBase | AxiosResponse<IAjaxResponseBase> | Error) => void;
 
+  /**
+   * Show blocking loader overlay scoped to this form
+   * @param message Optional message to display
+   * @returns Loader ID for tracking
+   */
+  showLoader: (message?: string) => string;
+
+  /**
+   * Hide all active loaders
+   */
+  hideLoaders: () => void;
+
   /** antd form instance */
   formInstance?: FormInstance<Values> | undefined;
   shaForm?: IShaFormInstance<Values> | undefined;
