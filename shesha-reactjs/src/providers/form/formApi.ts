@@ -12,6 +12,14 @@ import { IEntityTypeIdentifier } from "../sheshaApplication/publicApi/entities/m
 import { addDelayedUpdateProperty } from "../delayedUpdateProvider";
 import { isDefined } from "@/utils/nullables";
 
+/**
+ * Form loader instance with progressive feedback methods
+ */
+export interface IFormLoaderInstanceApi {
+  updateMessage(message: string): void;
+  close(): void;
+}
+
 export interface IFormSettings {
   modelType?: string | IEntityTypeIdentifier | undefined;
 

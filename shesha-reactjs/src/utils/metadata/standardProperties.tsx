@@ -106,7 +106,7 @@ export const registerSelectedRowAction: MetadataBuilderAction = (builder, name =
 };
 
 export const registerPageContextAction: MetadataBuilderAction = (builder, name = "pageContext") => {
-  builder.addCustom(name, "Contexts data of current page", () => {
+  builder.addCustom(name, "Page context with loader API and data access", () => {
     const definition: TypeDefinition = {
       typeName: 'IPageContext',
       files: [{ content: 'export interface IPageContext { [key: string]: any }', fileName: 'apis/pageContext.ts' }],
