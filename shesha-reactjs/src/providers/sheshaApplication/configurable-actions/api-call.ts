@@ -1,5 +1,7 @@
+import { useRef } from 'react';
 import { nanoid } from '@/utils/uuid';
 import { useSheshaApplication } from "@/providers";
+import { useAvailableConstantsData, evaluateString, executeScript, genericActionArgumentsEvaluator } from '@/providers/form/utils';
 import { SheshaActionOwners } from "../../configurableActionsDispatcher/models";
 import axios, { Method } from 'axios';
 import { IKeyValue } from "@/interfaces/keyValue";
@@ -10,7 +12,22 @@ import { mapKeyValueToDictionary } from "@/utils/dictionary";
 import { getQueryParams } from "@/utils/url";
 import { isNullOrWhiteSpace } from '@/utils/nullables';
 import { FormMarkupFactory } from '@/interfaces/configurableAction';
-import { IRequestParam, IRequestHeader, IRequestBody } from '@/components/requestConfigModal';
+import { IRequestParam, IRequestHeader, IRequestBody, IResponseTransformationConfiguration, RequestValue, executeResponseTransformation } from '@/components/requestConfigModal';
+import { isPropertySettings } from '@/designer-components/_settings/utils/utils';
+import { IDictionary } from '@/interfaces';
+
+// The action arguments evaluator already runs Mustache on every string in the arguments tree,
+// including `_value` and `_code` inside our IPropertySetting wrapper. So by the time the
+// executer runs, those strings are already interpolated — we just need to pick the right one
+// based on the chosen mode and unwrap the setting.
+const resolveRequestValue = (raw: RequestValue): string | undefined => {
+  if (isPropertySettings(raw)) {
+    const wrapped = raw as { _mode?: string; _value?: unknown; _code?: unknown };
+    const picked = wrapped._mode === 'code' ? wrapped._code : wrapped._value;
+    return picked === undefined || picked === null ? '' : String(picked);
+  }
+  return raw as string | undefined;
+};
 
 export interface IApiCallArguments {
   url: string;
@@ -23,6 +40,7 @@ export interface IApiCallArguments {
     params?: IRequestParam[];
     headers?: IRequestHeader[];
     body?: IRequestBody;
+    responseTransformation?: IResponseTransformationConfiguration;
   };
 }
 
@@ -75,23 +93,84 @@ const getApiCallArgumentsForm: FormMarkupFactory = ({ fbf }) => {
     .toJson();
 };
 
+// Applies the optional response transformation. The original response is never mutated; when the
+// transformation is disabled or fails, the original response is returned unchanged so a bad script
+// can never break the action. `context` is the standard Shesha constants object (globalState,
+// pageContext, http, form, data, …) with `response` layered in — the same scope every other code
+// editor exposes.
+const applyResponseTransformation = async (
+  original: unknown,
+  context: object,
+  transformation?: IResponseTransformationConfiguration,
+): Promise<unknown> => {
+  if (!transformation?.enabled || !transformation.script?.trim()) {
+    return original;
+  }
+
+  const result = await executeResponseTransformation(transformation.script, context);
+  if (result.success) {
+    return result.output;
+  }
+
+  console.error('Response transformation failed, returning original response:', result.error);
+  return original;
+};
+
 const isGlobalUrl = (url: string): boolean => {
   return !isNullOrWhiteSpace(url) && Boolean(url.match(/^(http|ftp|https):\/\//gi));
 };
 
+const prepareUrlAndData = (url: string, verb: string, parameters: IDictionary<string>): { url: string; data: IDictionary<string> | undefined } => {
+  const encodeAsQueryString = ['get', 'delete'].includes(verb.toLowerCase());
+  if (encodeAsQueryString) {
+    const queryStringData = { ...getQueryParams(url), ...parameters };
+    return {
+      url: `${url}?${qs.stringify(queryStringData, { allowDots: true })}`,
+      data: undefined,
+    };
+  } else {
+    return {
+      url,
+      data: parameters,
+    };
+  }
+};
+
 export const useApiCallAction = (): void => {
   const { backendUrl, httpHeaders } = useSheshaApplication();
+
+  // The response transformation runs as a standard Shesha script, so it needs the same constants
+  // (globalState, pageContext, http, form, data, …) as every other code editor. `responseHolder`
+  // is a stable object whose `response` key is registered as an available constant; we write the
+  // actual response into it just before executing the transformation. The accessor reads it lazily,
+  // so the live value is picked up without rebuilding the constants on every API response.
+  const responseHolder = useRef<{ response: unknown }>({ response: undefined });
+  const allData = useAvailableConstantsData({}, responseHolder.current);
 
   useConfigurableAction<IApiCallArguments>({
     isPermament: true,
     owner: 'Common',
     ownerUid: SheshaActionOwners.Common,
     name: 'API Call',
-    label: 'Call API',
+    label: 'API Call',
     sortOrder: 5,
     hasArguments: true,
     argumentsFormMarkup: getApiCallArgumentsForm,
-    executer: (actionArgs, _context) => {
+    // Evaluate arguments normally (params/headers/url get their Mustache resolved), but keep the
+    // JSON/raw body template raw. A JSON body is one big string, and letting the generic pass run
+    // Mustache over it can blank tags before the body data is available; instead the executer
+    // evaluates it against the live execution context (same data params use). form-data field
+    // values stay evaluated here and are read via resolveRequestValue.
+    evaluateArguments: async (args, context) => {
+      const evaluated = await genericActionArgumentsEvaluator<IApiCallArguments>(args, context);
+      const srcBody = args?.requestConfig?.body;
+      const dstBody = evaluated?.requestConfig?.body;
+      if (dstBody && srcBody && (srcBody.type === 'json' || srcBody.type === 'raw') && typeof srcBody.content === 'string') {
+        dstBody.content = srcBody.content;
+      }
+      return evaluated;
+    },
+    executer: async (actionArgs, context) => {
       const {
         url,
         verb,
@@ -106,7 +185,7 @@ export const useApiCallAction = (): void => {
 
       // Debug logging (can be removed in production)
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 API Call Debug:', {
+        console.warn('🔍 API Call Debug:', {
           hasRequestConfig: !!requestConfig,
           requestConfigParams: requestConfig?.params,
           verb,
@@ -115,19 +194,19 @@ export const useApiCallAction = (): void => {
 
       if (requestConfig) {
         // New structure: use requestConfig
-        const enabledParams = requestConfig.params?.filter(p => p.enabled) || [];
+        const enabledParams = requestConfig.params?.filter((p) => p.enabled) || [];
         finalParams = enabledParams.reduce((acc, param) => {
           if (param.key) {
-            let value = param.value;
+            let value: any = resolveRequestValue(param.value);
 
             // Special handling for 'properties' parameter - normalize GraphQL-like syntax
             // Convert multi-line format to single line with spaces
             if (param.key.toLowerCase() === 'properties' && typeof value === 'string') {
               value = value
-                .split('\n')           // Split by newlines
-                .map(line => line.trim())  // Trim each line
-                .filter(line => line)      // Remove empty lines
-                .join(' ');                // Join with spaces
+                .split('\n') // Split by newlines
+                .map((line) => line.trim()) // Trim each line
+                .filter((line) => line) // Remove empty lines
+                .join(' '); // Join with spaces
             }
 
             acc[param.key] = value;
@@ -135,9 +214,9 @@ export const useApiCallAction = (): void => {
           return acc;
         }, {} as Record<string, any>);
 
-        const enabledHeaders = requestConfig.headers?.filter(h => h.enabled) || [];
+        const enabledHeaders = requestConfig.headers?.filter((h) => h.enabled) || [];
         finalHeaders = enabledHeaders.reduce((acc, header) => {
-          if (header.key) acc[header.key] = header.value;
+          if (header.key) acc[header.key] = resolveRequestValue(header.value);
           return acc;
         }, {} as Record<string, any>);
 
@@ -146,9 +225,14 @@ export const useApiCallAction = (): void => {
           switch (requestConfig.body.type) {
             case 'json':
               try {
-                requestBody = typeof requestConfig.body.content === 'string'
-                  ? JSON.parse(requestConfig.body.content)
+                // Resolve Mustache in the JSON body against the live execution context (data,
+                // globalState, etc.) before parsing, so e.g. {"name":"{{data.firstName}}"} works.
+                const evaluatedJson = typeof requestConfig.body.content === 'string'
+                  ? evaluateString(requestConfig.body.content, context as object)
                   : requestConfig.body.content;
+                requestBody = typeof evaluatedJson === 'string'
+                  ? JSON.parse(evaluatedJson)
+                  : evaluatedJson;
               } catch {
                 requestBody = requestConfig.body.content;
               }
@@ -159,9 +243,15 @@ export const useApiCallAction = (): void => {
             case 'form-data':
             case 'x-www-form-urlencoded':
               try {
-                const formFields = JSON.parse(requestConfig.body.content as string);
-                requestBody = formFields.reduce((acc: any, field: any) => {
-                  if (field.key) acc[field.key] = field.value;
+                // New storage: typed array of fields. Legacy storage: JSON-stringified array.
+                const rawContent = requestConfig.body.content;
+                const formFields: Array<{ key: string; value: RequestValue; enabled?: boolean }> = Array.isArray(rawContent)
+                  ? rawContent
+                  : JSON.parse(rawContent as string);
+                requestBody = formFields.reduce((acc: any, field) => {
+                  if (field.key && field.enabled !== false) {
+                    acc[field.key] = resolveRequestValue(field.value);
+                  }
                   return acc;
                 }, {});
                 if (requestConfig.body.type === 'x-www-form-urlencoded' && !finalHeaders['Content-Type']) {
@@ -171,45 +261,40 @@ export const useApiCallAction = (): void => {
                 requestBody = requestConfig.body.content;
               }
               break;
-            case 'raw':
-              requestBody = requestConfig.body.content;
-              break;
-            case 'graphql':
-              try {
-                const graphqlBody = requestConfig.body.content as any;
-                const payload: any = {
-                  query: graphqlBody.query,
-                };
-
-                // Parse and add variables if provided
-                if (graphqlBody.variables) {
-                  try {
-                    const parsedVariables = typeof graphqlBody.variables === 'string'
-                      ? JSON.parse(graphqlBody.variables)
-                      : graphqlBody.variables;
-                    if (parsedVariables && Object.keys(parsedVariables).length > 0) {
-                      payload.variables = parsedVariables;
-                    }
-                  } catch {
-                    // If variables parsing fails, skip them
-                  }
+            case 'raw': {
+              const rawSubType = requestConfig.body.rawSubType ?? 'text';
+              if (rawSubType === 'javascript') {
+                // Executable JS body: run the script against the live execution context (data,
+                // globalState, http, …); its returned value becomes the payload.
+                try {
+                  requestBody = typeof requestConfig.body.content === 'string' && requestConfig.body.content.trim()
+                    ? await executeScript<unknown>(requestConfig.body.content, context as object)
+                    : undefined;
+                } catch (e) {
+                  console.error('API Call: JavaScript body execution failed:', e);
+                  requestBody = undefined;
                 }
-
-                // Add operation name if provided
-                if (graphqlBody.operationName) {
-                  payload.operationName = graphqlBody.operationName;
-                }
-
-                requestBody = payload;
-
-                // Set Content-Type for GraphQL
-                if (!finalHeaders['Content-Type']) {
+                // Object results are sent as JSON; strings/primitives are sent as-is.
+                if (!finalHeaders['Content-Type'] && requestBody !== null && typeof requestBody === 'object') {
                   finalHeaders['Content-Type'] = 'application/json';
                 }
-              } catch {
-                requestBody = requestConfig.body.content;
+              } else {
+                // Other raw sub-types are sent as text, with Mustache resolved against the context.
+                requestBody = typeof requestConfig.body.content === 'string'
+                  ? evaluateString(requestConfig.body.content, context as object)
+                  : requestConfig.body.content;
+                const rawContentTypeMap: Record<string, string> = {
+                  text: 'text/plain',
+                  json: 'application/json',
+                  xml: 'application/xml',
+                  html: 'text/html',
+                };
+                if (!finalHeaders['Content-Type']) {
+                  finalHeaders['Content-Type'] = rawContentTypeMap[rawSubType] ?? 'text/plain';
+                }
               }
               break;
+            }
           }
         }
       } else {
@@ -223,53 +308,33 @@ export const useApiCallAction = (): void => {
 
       // validate arguments
       if (!url)
-        return Promise.reject('Expected expression to be defined but it was found to be empty.');
+        return Promise.reject('Url is not specified.');
+      if (!verb)
+        return Promise.reject('Http verb is not specified.');
 
       const baseUrl = isGlobalUrl(url)
         ? undefined
         : backendUrl;
 
-      let preparedUrl = url;
-      let preparedData = requestBody !== undefined ? requestBody : { ...finalParams };
-      const encodeAsQueryString = ['get', 'delete'].includes(verb?.toLowerCase());
-
-      if (encodeAsQueryString) {
-        const queryStringData = { ...getQueryParams(preparedUrl), ...finalParams };
-        const queryString = qs.stringify(queryStringData, { allowDots: true });
-
-        // Debug logging
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔍 Query String Debug:', {
-            finalParams,
-            queryStringData,
-            queryString,
-            originalUrl: preparedUrl,
-          });
-        }
-
-        // Remove trailing ? from URL if present
-        const cleanUrl = preparedUrl.endsWith('?') ? preparedUrl.slice(0, -1) : preparedUrl;
-
-        // Add query string only if there are parameters
-        if (queryString) {
-          preparedUrl = `${cleanUrl}?${queryString}`;
-        } else {
-          preparedUrl = cleanUrl;
-        }
-
-        preparedData = undefined;
-      } else if (requestBody === undefined) {
-        // If no body was explicitly set, use params as body for POST/PUT/PATCH
-        preparedData = { ...finalParams };
-      }
+      const { url: preparedUrl, data: paramsData } = prepareUrlAndData(url, verb, { ...finalParams });
+      // An explicitly configured request body takes precedence as the payload for verbs that send one
+      // (GET/DELETE encode params into the query string, so paramsData is undefined there and no body is sent).
+      const preparedData = paramsData !== undefined && requestBody !== undefined
+        ? requestBody
+        : paramsData;
 
       return axios({
         url: preparedUrl,
-        baseURL: baseUrl,
         data: preparedData,
         method: verb as Method,
         headers: allHeaders,
-      }).then((response) => unwrapAbpResponse(response.data));
+        ...(baseUrl && { baseURL: baseUrl }),
+      }).then((response) => {
+        const original = unwrapAbpResponse(response.data);
+        // Expose the freshly-received response to the transformation script as `response`.
+        responseHolder.current.response = original;
+        return applyResponseTransformation(original, allData, requestConfig?.responseTransformation);
+      });
     },
-  }, [backendUrl, httpHeaders]);
+  }, [backendUrl, httpHeaders, allData]);
 };

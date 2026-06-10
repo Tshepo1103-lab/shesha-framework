@@ -1,4 +1,4 @@
-import { IHasFullEntityType, IPropertyMetadata, ITypeDefinitionLoadingContext, SourceFile, TypeDefinition, isEntityReferencePropertyMetadata, isPropertiesArray } from "@/interfaces/metadata";
+import { IHasFullEntityType, IPropertyMetadata, ITypeDefinitionLoadingContext, SourceFile, TypeDefinition, isEntityReferencePropertyMetadata, isHasFullyQualifiedEntityType, isPropertiesArray } from "@/interfaces/metadata";
 import { IObjectMetadataBuilder } from "@/utils/metadata/metadataBuilder";
 import { EntitiesManager } from "./manager";
 import { HttpClientApi } from "@/publicJsApis/httpClient";
@@ -9,6 +9,7 @@ import { TypesImporter } from "@/utils/metadata/typesImporter";
 import { getEntityIdJsType } from "@/utils/metadata";
 import camelcase from "camelcase";
 import { EOL } from "@/utils/metadata/models";
+import { isDefined } from "@/utils/nullables";
 
 type EntityItemType = 'module' | 'entityType';
 
@@ -177,22 +178,27 @@ const entitiesConfigurationToTypeDefinition = async (configurations: EntityConfi
 
     sb.incIndent();
 
-    let baseTypesImported = false;
-
     const sortedProps = sortByPath(property.properties);
     for (const prop of sortedProps) {
-      if ((prop as IEntityPropertyMetadata).entityItemType === 'entityType' && isEntityReferencePropertyMetadata(prop)) {
-        if (!baseTypesImported) {
-          typesImporter.import({ typeName: "EntityAccessor", filePath: BASE_ENTITY_MODULE });
-        }
+      if ((prop as IEntityPropertyMetadata).entityItemType === 'entityType' && isEntityReferencePropertyMetadata(prop) && isHasFullyQualifiedEntityType(prop)) {
+        typesImporter.import({ typeName: "EntityAccessor", filePath: BASE_ENTITY_MODULE });
 
         const typeDef = await typesBuilder.getEntityType({ name: prop.entityType, module: prop.entityModule });
         if (typeDef) {
           typesImporter.import(typeDef);
 
+          if (!isDefined(typeDef.metadata)) {
+            // throw new Error(`Metadata is not defined for entity '${prop.entityModule}:${prop.entityType}'`);
+            console.error(`Metadata is not defined for entity '${prop.entityModule}:${prop.entityType}'`);
+            continue;
+          }
+
           const idType = getEntityIdJsType(typeDef.metadata);
-          if (!idType)
-            throw new Error(`Failed to find identifier type for entity '${prop.entityModule}:${prop.entityType}'`);
+          if (!idType) {
+            // throw new Error(`Failed to find identifier type for entity '${prop.entityModule}:${prop.entityType}'`);
+            console.error(`Failed to find identifier type for entity '${prop.entityModule}:${prop.entityType}'`);
+            continue;
+          }
 
           if (prop.description)
             sb.append(`/** ${prop.description} */`);

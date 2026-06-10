@@ -1,38 +1,38 @@
 import { Tooltip } from 'antd';
 import React from 'react';
-import { IconType, ShaIcon } from '@/components';
 import {
   isNavigationActionConfiguration,
   useConfigurableActionDispatcher,
-  useDataTable,
+  useDataTableStore,
   useShaRouting,
 } from '@/providers';
 import { ITableActionColumn } from '@/providers/dataTable/interfaces';
 import { ICommonCellProps } from './interfaces';
 import Link from 'next/link';
 import { useAsyncDeepCompareMemo } from '@/hooks/useAsyncMemo';
-import { TypedProxy, useAvailableConstantsData } from '@/index';
-
+import { TypedProxy } from '@/providers/form/observableProxy';
+import { useAvailableConstantsData } from '@/providers/form/utils';
+import { ShaIcon, IconType } from '@/components/shaIcon';
 
 export type IActionCellProps<D extends object = object, V = any> = ICommonCellProps<ITableActionColumn, D, V>;
 
-export const ActionCell = <D extends object = object, V = any>(props: IActionCellProps<D, V>): JSX.Element => {
+export const ActionCell = <D extends object = object, V = any>(props: IActionCellProps<D, V>): React.JSX.Element => {
   const { columnConfig } = props;
-  const { changeActionedRow } = useDataTable();
+  const { changeActionedRow } = useDataTableStore();
   const { executeAction, prepareArguments, useActionDynamicContext } = useConfigurableActionDispatcher();
   const { getUrlFromNavigationRequest } = useShaRouting();
 
   const { actionConfiguration, icon, description } = columnConfig ?? {};
   const dynamicContext = useActionDynamicContext(actionConfiguration);
   const evaluationContext = useAvailableConstantsData({}, dynamicContext);
-  (evaluationContext as TypedProxy<any>).addAccessor('selectedRow', () => props?.cell?.row?.original);
+  (evaluationContext as TypedProxy<any>).addAccessor('selectedRow', () => props.cell?.row?.original);
 
   const clickHandler = (event, data): void => {
     event.preventDefault();
 
     if (actionConfiguration) {
       changeActionedRow(data.row.original);
-      executeAction({
+      void executeAction({
         actionConfiguration: actionConfiguration,
         argumentsEvaluationContext: evaluationContext,
       });

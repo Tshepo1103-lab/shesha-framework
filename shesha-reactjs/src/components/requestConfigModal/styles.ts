@@ -89,6 +89,23 @@ export const useStyles = createStyles(({ css, cx, prefixCls }) => {
     font-size: 12px;
   `);
 
+  const codeEditorWrapper = cx(`${prefixCls}-code-editor-wrapper`, css`
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    overflow: hidden;
+  `);
+
+  // Dim form-data rows that are excluded from the payload (checkbox unticked). Only the Key and
+  // Value cells are dimmed (columns 2 and 3); the Include checkbox and delete action stay fully
+  // opaque so they remain easy to interact with. (Dimming the whole <tr> would trap children in a
+  // stacking context and prevent restoring their opacity.)
+  const disabledRow = cx(`${prefixCls}-disabled-row`, css`
+    td:nth-child(2),
+    td:nth-child(3) {
+      opacity: 0.45;
+    }
+  `);
+
   return {
     requestConfigModal,
     modalContent,
@@ -98,5 +115,7 @@ export const useStyles = createStyles(({ css, cx, prefixCls }) => {
     bodyTypeSelector,
     bodyEditor,
     jsonError,
+    codeEditorWrapper,
+    disabledRow,
   };
 });

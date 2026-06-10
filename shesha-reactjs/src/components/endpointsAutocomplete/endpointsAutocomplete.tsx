@@ -6,6 +6,8 @@ import { useDebouncedCallback } from 'use-debounce';
 import { IApiEndpoint } from '@/interfaces';
 import { DefaultOptionType } from 'antd/lib/select';
 import { isAjaxSuccessResponse } from '@/interfaces/ajaxResponse';
+import { useFormData } from '@/providers';
+import { evaluateValueAsString } from '@/providers/form/utils';
 
 export interface IHttpVerb {
   id: string;
@@ -82,9 +84,24 @@ const getVerbFromValue = (value?: EndpointsAutocompleteValue): string | null => 
 
 export const EndpointsAutocomplete: FC<IEndpointsAutocompleteProps> = ({ readOnly = false, mode = 'url', ...props }) => {
   const endpointsFetcher = useApiEndpoints({ lazy: true });
+  const { data: formData } = useFormData();
+  const verb = props.httpVerb ? evaluateValueAsString(props.httpVerb, { data: formData }) : props.httpVerb;
+
+  // Helper to check if verb is a valid resolved string
+  const isValidVerb = (verbValue: any): verbValue is string => {
+    return typeof verbValue === 'string' && verbValue.trim() !== '';
+  };
+
 
   const doFetchItems = (term: string, verb: string): void => {
-    endpointsFetcher.refetch({ queryParams: { term, verb: verb } });
+    // Additional safety check: only make the request if verb is valid
+    if (!isValidVerb(verb)) {
+      return;
+    }
+    endpointsFetcher.refetch({ queryParams: { term, verb: verb } }).catch((error) => {
+      console.error('Failed to fetch endpoints', error);
+      throw error;
+    });
   };
   const debouncedFetchItems = useDebouncedCallback<(value: string, verb: string) => void>(
     (localValue, localVerb) => {
@@ -94,8 +111,13 @@ export const EndpointsAutocomplete: FC<IEndpointsAutocompleteProps> = ({ readOnl
     200,
   );
 
-  const currentVerb = mode === 'url' ? props.httpVerb : getVerbFromValue(props.value);
+  const currentVerb = mode === 'url' ? verb : getVerbFromValue(props.value);
   useEffect(() => {
+    // Only fetch if we have a valid resolved verb
+    if (!isValidVerb(currentVerb)) {
+      return;
+    }
+
     const url = getUrlFromValue(props.value);
     debouncedFetchItems(url, currentVerb);
   }, [currentVerb]);
@@ -130,13 +152,17 @@ export const EndpointsAutocomplete: FC<IEndpointsAutocompleteProps> = ({ readOnl
   const handleSearch = (localValue: string): void => {
     onChangeUrl(localValue);
 
-    if (localValue) {
+    // Only fetch if we have a valid search value and a valid resolved verb
+    if (localValue && isValidVerb(currentVerb)) {
       debouncedFetchItems(localValue, currentVerb);
     }
   };
 
   const url = getUrlFromValue(props.value);
 
+  // AutoComplete clones its single child to wire up the input, so the child must be a
+  // plain <Input>. Prefix/suffix are rendered as Space.Addon siblings (antd v6 replacement
+  // for the deprecated Input addonBefore/addonAfter), not nested inside the AutoComplete.
   const autocomplete = (
     <AutoComplete
       disabled={readOnly}
@@ -146,22 +172,32 @@ export const EndpointsAutocomplete: FC<IEndpointsAutocompleteProps> = ({ readOnl
       onChange={onChangeUrl}
       onSearch={handleSearch}
       notFoundContent={null}
-      // size={props.size}
+      style={{ width: "100%" }}
       styles={props.dropdownStyle ? { popup: { root: props.dropdownStyle } } : undefined}
       popupMatchSelectWidth={false}
     >
-      <Input addonBefore={props.prefix} addonAfter={props.suffix} size={props.size} />
+      <Input size={props.size} />
     </AutoComplete>
   );
+
+  const autocompleteWithAddons = props.prefix || props.suffix
+    ? (
+      <Space.Compact style={{ width: "100%" }}>
+        {props.prefix && <Space.Addon>{props.prefix}</Space.Addon>}
+        {autocomplete}
+        {props.suffix && <Space.Addon>{props.suffix}</Space.Addon>}
+      </Space.Compact>
+    )
+    : autocomplete;
 
   return mode === 'endpoint'
     ? (
       <Space.Compact style={{ width: "100%" }}>
         <VerbSelector verbs={props.availableHttpVerbs} onChange={onVerbChange} value={isApiEndpoint(props.value) ? props.value.httpVerb : null} size={props.size} />
-        {autocomplete}
+        {autocompleteWithAddons}
       </Space.Compact>
     )
     : (
-      <>{autocomplete}</>
+      <>{autocompleteWithAddons}</>
     );
 };
