@@ -90,6 +90,68 @@
             "version": 2
           },
           {
+            "id": "gp1Xy7Zm-KaG5MLIZt-grp",
+            "type": "propertyAutocomplete",
+            "propertyName": "groupingProperty",
+            "label": "Group By Property",
+            "labelAlign": "right",
+            "parentId": "uEFBpy19tApJMiBuFyj9s",
+            "hidden": {
+              "_code": "return !getSettingValue(data?.entityTypeShortAlias);",
+              "_mode": "code",
+              "_value": false
+            },
+            "isDynamic": false,
+            "placeholder": "",
+            "description": "Property used to group menu items into sub-menus. Items sharing the same value will be placed under the same group.",
+            "validate": {},
+            "modelType": "{{data.entityTypeShortAlias}}",
+            "autoFillProps": false,
+            "settingsValidationErrors": [],
+            "version": 2
+          },
+          {
+            "id": "srt1Xy7Zm-KaG5MLIZt-sb",
+            "type": "propertyAutocomplete",
+            "propertyName": "sortBy",
+            "label": "Sort By Property",
+            "labelAlign": "right",
+            "parentId": "uEFBpy19tApJMiBuFyj9s",
+            "hidden": {
+              "_code": "return !getSettingValue(data?.entityTypeShortAlias);",
+              "_mode": "code",
+              "_value": false
+            },
+            "isDynamic": false,
+            "placeholder": "",
+            "description": "Property used to sort the fetched items.",
+            "validate": {},
+            "modelType": "{{data.entityTypeShortAlias}}",
+            "autoFillProps": false,
+            "settingsValidationErrors": [],
+            "version": 2
+          },
+          {
+            "id": "srt2Xy7Zm-KaG5MLIZt-so",
+            "type": "dropdown",
+            "propertyName": "sortOrder",
+            "label": "Sort Order",
+            "labelAlign": "right",
+            "parentId": "uEFBpy19tApJMiBuFyj9s",
+            "hidden": {
+              "_code": "return !getSettingValue(data?.sortBy);",
+              "_mode": "code",
+              "_value": false
+            },
+            "validate": {},
+            "dataSourceType": "values",
+            "values": [
+              { "id": "so-asc", "label": "Ascending", "value": "asc" },
+              { "id": "so-desc", "label": "Descending", "value": "desc" }
+            ],
+            "settingsValidationErrors": []
+          },
+          {
             "id": "Vl0092ZM-SeCukk5VlgXm",
             "type": "dropdown",
             "propertyName": "buttonType",

@@ -8,7 +8,7 @@ interface IQueryParams {
 }
 
 export const useTemplates = (settings: IDataSourceArguments) => {
-  const { dataSourceUrl, queryParams, entityTypeShortAlias, maxResultCount } = settings ?? {};
+  const { dataSourceUrl, queryParams, entityTypeShortAlias, maxResultCount, sortBy, sortOrder, groupingProperty } = settings ?? {};
   const { data } = useFormData();
   const { globalState } = useGlobalState();
   const pageContext = useDataContextManager(false)?.getPageContext();
@@ -37,12 +37,19 @@ export const useTemplates = (settings: IDataSourceArguments) => {
       };
     }
 
+    const sorting = sortBy
+      ? `${sortBy} ${sortOrder === 'desc' ? 'desc' : 'asc'}`
+      : groupingProperty
+        ? `${groupingProperty} asc`
+        : undefined;
+
     return {
       path: `/api/services/app/Entities/GetAll`,
       queryParams: {
         entityType: entityTypeShortAlias,
         maxResultCount: maxResultCount || 100,
         filter: evaluatedFilters,
+        ...(sorting ? { sorting } : {}),
       },
     };
   };

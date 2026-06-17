@@ -71,6 +71,60 @@
       "settingsValidationErrors": []
     },
     {
+      "id": "gp1Xy7Zm-url-grp",
+      "type": "textField",
+      "propertyName": "groupingProperty",
+      "label": "Group By Property",
+      "labelAlign": "right",
+      "parentId": "rqEyWa_qG99Qo53kIjCKb",
+      "hidden": {
+        "_code": "return !getSettingValue(data?.dataSourceUrl);",
+        "_mode": "code",
+        "_value": false
+      },
+      "placeholder": "",
+      "description": "Property used to group menu items into sub-menus. Items sharing the same value will be placed under the same group.",
+      "validate": {},
+      "settingsValidationErrors": []
+    },
+    {
+      "id": "srt1Xy7Zm-url-sb",
+      "type": "textField",
+      "propertyName": "sortBy",
+      "label": "Sort By Property",
+      "labelAlign": "right",
+      "parentId": "rqEyWa_qG99Qo53kIjCKb",
+      "hidden": {
+        "_code": "return !getSettingValue(data?.dataSourceUrl);",
+        "_mode": "code",
+        "_value": false
+      },
+      "placeholder": "",
+      "description": "Property used to sort the fetched items.",
+      "validate": {},
+      "settingsValidationErrors": []
+    },
+    {
+      "id": "srt2Xy7Zm-url-so",
+      "type": "dropdown",
+      "propertyName": "sortOrder",
+      "label": "Sort Order",
+      "labelAlign": "right",
+      "parentId": "rqEyWa_qG99Qo53kIjCKb",
+      "hidden": {
+        "_code": "return !getSettingValue(data?.sortBy);",
+        "_mode": "code",
+        "_value": false
+      },
+      "validate": {},
+      "dataSourceType": "values",
+      "values": [
+        { "id": "so-asc", "label": "Ascending", "value": "asc" },
+        { "id": "so-desc", "label": "Descending", "value": "desc" }
+      ],
+      "settingsValidationErrors": []
+    },
+    {
       "id": "Vl0_92oM-SeCukk5VlgXm",
       "type": "dropdown",
       "propertyName": "buttonType",
